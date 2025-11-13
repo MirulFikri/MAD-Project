@@ -1,16 +1,16 @@
 # Mobile Application Develpoment Project
 
-Title: Pet Care
+**Title**: Pet Care
 
-Background of the problem: Hard too keep track of pet's vaccination and appointment schedule.
+**Background of the problem**: Hard too keep track of pet's vaccination and appointment schedule.
 
-Purpose or objective: Owners can easily keep track of their pets medical records and health informations.
+**Purpose or objective**: Owners can easily keep track of their pets medical records and health informations.
 
-Target user: Pet owners and veterinary clinics
+**Target user**: Pet owners and veterinary clinics
 
-Preferred platform: Mobile application
+**Preferred platform**: Mobile application
 
-Features and functionality:
+**Features and functionality**:tckf8
 
 ## Group Members
 
