@@ -1,16 +1,20 @@
-# petcare_app
+# Mobile Application Develpoment Project
 
-A new Flutter project.
+Title: Pet Care
 
-## Getting Started
+Background of the problem: Hard too keep track of pet's vaccination and appointment schedule.
 
-This project is a starting point for a Flutter application.
+Purpose or objective: Owners can easily keep track of their pets medical records and health informations.
 
-A few resources to get you started if this is your first Flutter project:
+Target user: Pet owners and veterinary clinics
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Preferred platform: Mobile application
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Features and functionality:
+
+## Group Members
+
+- Amirul Fikri Bin Amir (2217981)
+- Tun Ainul Yaqin Bin Azmel (2216103)
+- Mohamad Haris Daniel Bin Abdullah (2226517)
+- Muhamad Aiman Bin Ajee Maideen (2222077)
