@@ -12,12 +12,12 @@
 
 **Title:** Pet Care
 
-**Background of the problem:**
+**Background of the problem:**  
     Owning a pet carries a lot of responsibility, as they require care and attention. This is especially true when owning multiple 
 pets whith each having different needs and health conditions. Many owners unintentionally forget crucial responsibilities such as vaccination dates, routine vet checkups, grooming appointments, and daily medication because they rely on memory or physical notes that can be easily misplaced. Another common issue is the lack of tools to monitor a pet’s daily activity or movement, that could help pet owners to detect any problems that their pets have.
 
-**Purpose or objective:** 
-The purposeobjectives of the app are:
+**Purpose or objective:**  
+The objectives of the app are:
 - Provide a centralized platform for managing pets’ medical records, vaccination dates, activities, and health conditions.
 - Help owners maintain consistent daily care through reminders.
 - Enable real-time monitoring of pet activity to identify early signs of health concerns.
@@ -27,7 +27,7 @@ The purposeobjectives of the app are:
 
 **Preferred platform:** Mobile application. Using flutter and dart language.
 
-**Features and functionality:**
+**Features and functionality:**  
 - Profile for each pet: Contains name, breed, age, weight, and photo. Medical history (vaccines, allergies, past checkups).
 
 - Health dashboard (Home screen): A quick overview with upcoming reminders.
