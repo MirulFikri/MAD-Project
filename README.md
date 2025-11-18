@@ -7,7 +7,8 @@
 - Mohamad Haris Daniel Bin Abdullah (2226517)
 - Muhamad Aiman Bin Ajee Maideen (2222077)
 
-### 1. Project Ideation & Initiation
+
+## 1. Project Ideation & Initiation
 
 **a. Title**: Pet Care
 
@@ -33,10 +34,14 @@ Daily routines (meal times, walks, etc.)
 
 - Vet finder: Show nearby veterinary clinics or pet hospitals. Include contact info, map directions, and opening hours
 
-### 2. Requirement Analysis & Planning
 
-### 3. Project Design
+## 2. Requirement Analysis & Planning
 
-### 4. Project Development
 
-### 5. References
+## 3. Project Design
+
+
+## 4. Project Development
+
+
+## 5. References
