@@ -10,29 +10,33 @@
 
 ## 1. Project Ideation & Initiation
 
-**a. Title**: Pet Care
+**Title:** Pet Care
 
-**b. Background of the problem**: 
-- Many pet owners forget or struggle to manage pet care tasks like vet visits, grooming, and vaccinations.
-- There is no simple system to track a pet’s daily activity, movement, or health status.
+**Background of the problem:**
+    Owning a pet carries a lot of responsibility, as they require care and attention. This is especially true when owning multiple 
+pets whith each having different needs and health conditions. Many owners unintentionally forget crucial responsibilities such as vaccination dates, routine vet checkups, grooming appointments, and daily medication because they rely on memory or physical notes that can be easily misplaced. Another common issue is the lack of tools to monitor a pet’s daily activity or movement, that could help pet owners to detect any problems that their pets have.
 
-**c. Purpose or objective**: Owners can easily keep track of their pets medical records and health informations.
+**Purpose or objective:** 
+The purposeobjectives of the app are:
+- Provide a centralized platform for managing pets’ medical records, vaccination dates, activities, and health conditions.
+- Help owners maintain consistent daily care through reminders.
+- Enable real-time monitoring of pet activity to identify early signs of health concerns.
+- Support veterinary clinics by allowing them to easily share updates, records, and appointment schedules with pet owners.
 
-**d. Target user**: Pet owners and veterinary clinics
+**Target user:** Pet owners and veterinary clinics.
 
-**e. Preferred platform**: Mobile application.
+**Preferred platform:** Mobile application. Using flutter and dart language.
 
-**f. Features and functionality**:
+**Features and functionality:**
 - Profile for each pet: Contains name, breed, age, weight, and photo. Medical history (vaccines, allergies, past checkups).
-Daily routines (meal times, walks, etc.)
 
-- Health dashboard (Home screen)
+- Health dashboard (Home screen): A quick overview with upcoming reminders.
 
-- ReminderRemind owners about feeding time, grooming appointments, medication or vitamins, and vet checkups or vaccination dates.
+- Reminder: Remind owners about feeding time, grooming appointments, medication or vitamins, and vet checkups or vaccination dates.
 
 - Activity tracking: Track steps, distance, calories burned. Alert if pet hasn’t moved much (possible health issue)
 
-- Vet finder: Show nearby veterinary clinics or pet hospitals. Include contact info, map directions, and opening hours
+- Vet finder: Show nearby veterinary clinics or pet hospitals. Include contact info, map directions, and opening hours.
 
 
 ## 2. Requirement Analysis & Planning
