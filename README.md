@@ -3,6 +3,7 @@
 ## Group Members
 **Group Name:** Doom Patrol
 | Name | Matric No | Assigned Task |
+| :---: | :--------: | :------------: |
 | :--- | :--------: | :------------ |
 | Amirul Fikri Bin Amir | 2217981 | TBD |
 | Tun Ainul Yaqin Bin Azmel | 2216103 | TBD |
