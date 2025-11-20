@@ -1,12 +1,14 @@
 # Mobile Application Develpoment Project
 
 ## Group Members
-
-- Amirul Fikri Bin Amir (2217981)
-- Tun Ainul Yaqin Bin Azmel (2216103)
-- Mohamad Haris Daniel Bin Abdullah (2226517)
-- Muhamad Aiman Bin Ajee Maideen (2222077)
-
+**Group Name:** Doom Patrol
+| **Name** | **Matric No** | **Assigned Task** |
+| Name | Matric No | Assigned Task |
+| :--- | :-------- | :------------ |
+| Amirul Fikri Bin Amir | 2217981 | TBD |
+| Tun Ainul Yaqin Bin Azmel | 2216103 | TBD |
+| Mohamad Haris Daniel Bin Abdullah | 2226517 | TBD |
+| Muhamad Aiman Bin Ajee Maideen | 2222077 | TBD |
 
 ## 1. Project Ideation & Initiation
 
