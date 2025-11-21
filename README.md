@@ -4,10 +4,10 @@
 **Group Name:** Doom Patrol
 | Name | Matric No | Assigned Task |
 | ---- | --------- | ------------- |
-| Amirul Fikri Bin Amir | 2217981 | TBD |
-| Tun Ainul Yaqin Bin Azmel | 2216103 | TBD |
-| Mohamad Haris Daniel Bin Abdullah | 2226517 | TBD |
-| Muhamad Aiman Bin Ajee Maideen | 2222077 | TBD |
+| Amirul Fikri Bin Amir | 2217981 | Profile for users, pets, and vet clinics. |
+| Tun Ainul Yaqin Bin Azmel | 2216103 | Vet finder |
+| Mohamad Haris Daniel Bin Abdullah | 2226517 | Dashboard and activity tracking. |
+| Muhamad Aiman Bin Ajee Maideen | 2222077 | Reminder and notifications. |
 
 ## 1. Project Ideation & Initiation
 
@@ -29,7 +29,7 @@ The objectives of the app are:
 **Preferred platform:** Mobile application. Using flutter and dart language.
 
 **Features and functionality:**  
-- Profile for each pet: Contains name, breed, age, weight, and photo. Medical history (vaccines, allergies, past checkups).
+- Profile: Different profiles for pet owners, pets, and vet clinics. Owner's name and contact details. Pets' profile contains name, breed, age, weight, and photo, along with medical history (vaccines, allergies, past checkups).
 
 - Health dashboard (Home screen): A quick overview with upcoming reminders.
 
