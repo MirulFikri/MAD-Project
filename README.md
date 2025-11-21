@@ -4,10 +4,14 @@
 **Group Name:** Doom Patrol
 | Name | Matric No | Assigned Tasks |
 | ---- | --------- | ------------- |
-| Amirul Fikri Bin Amir | 2217981 | Background of the problem. Profile for users, pets, and vet clinics. |
-| Tun Ainul Yaqin Bin Azmel | 2216103 | Features and functionality. Vet finder |
-| Mohamad Haris Daniel Bin Abdullah | 2226517 | Target user and preferred platform. Dashboard and activity tracking. |
-| Muhamad Aiman Bin Ajee Maideen | 2222077 | Purpose or objective. Reminder and notifications. |
+| Amirul Fikri Bin Amir | 2217981 | - Background of the problem. 
+- Profile for users, pets, and vet clinics. |
+| Tun Ainul Yaqin Bin Azmel | 2216103 | - Features and functionality. 
+- Vet finder |
+| Mohamad Haris Daniel Bin Abdullah | 2226517 | - Target user and preferred platform. 
+- Dashboard and activity tracking. |
+| Muhamad Aiman Bin Ajee Maideen | 2222077 | - Purpose or objective. - 
+Reminder and notifications. |
 
 ## 1. Project Ideation & Initiation
 
