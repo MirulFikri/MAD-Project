@@ -42,6 +42,9 @@ The objectives of the app are:
 
 ## 2. Requirement Analysis & Planning
 
+### Gantt Chart
+![PetCare Porject Timeline](images/GanttChart.png)
+
 
 ## 3. Project Design
 
