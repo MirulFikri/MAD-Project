@@ -63,7 +63,7 @@ The objectives of the app are:
 
 ---
 
-## Firebase and Package Planning
+### Firebase and Package Planning
 Firebase was selected due to its real-time synchronization, built-in authentication, cloud storage support, and scalability. The planned Flutter packages include:
 - Firebase Authentication
 - Cloud Firestore
