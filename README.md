@@ -40,9 +40,7 @@ The objectives of the app are:
 - Vet finder: Show nearby veterinary clinics or pet hospitals. Include contact info, map directions, and opening hours.
 
 
-## 2. Requirement Analysis & Planning
-
-## CRUD operations, packages(TBD), and plugins(TBD)
+## 2. Requirement Analysis & Planning  
 
 ## CRUD Operations Analysis
 ### Pet Owner
@@ -71,7 +69,10 @@ Firebase was selected due to its real-time synchronization, built-in authenticat
 - Cloud Firestore
 - Firebase Storage
 
-### Gantt Chart
+## Sequence Diagram  
+![PetCare Sequence Diagram](images/SequenceDiagram.png)
+
+## Gantt Chart
 ![PetCare Porject Timeline](images/GanttChart.png)
 
 
