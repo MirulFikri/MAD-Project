@@ -42,6 +42,35 @@ The objectives of the app are:
 
 ## 2. Requirement Analysis & Planning
 
+## CRUD operations, packages(TBD), and plugins(TBD)
+
+## CRUD Operations Analysis
+### Pet Owner
+- Create accounts, pet profiles, reminders, and medical records
+- Read pet health dashboard, activity data, and reminders
+- Update pet details, reminder schedules, and health records
+- Delete inactive pet profiles and outdated records
+
+### Pet Profile
+- Create pet information including name, breed, age, weight, and photo
+- Read health history and activity tracking data
+- Update health-related information
+- Delete pet profiles when no longer required
+
+### Veterinary Clinic
+- Create clinic accounts and profiles
+- Read authorized pet medical records and appointment requests
+- Update clinic information, appointment schedules, and treatment notes
+- Delete outdated appointment or service records
+
+---
+
+## Firebase and Package Planning
+Firebase was selected due to its real-time synchronization, built-in authentication, cloud storage support, and scalability. The planned Flutter packages include:
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+
 ### Gantt Chart
 ![PetCare Porject Timeline](images/GanttChart.png)
 
