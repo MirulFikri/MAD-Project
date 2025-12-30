@@ -70,7 +70,10 @@ Firebase was selected due to its real-time synchronization, built-in authenticat
 - Firebase Storage
 
 ## Sequence Diagram  
-![PetCare Sequence Diagram](images/SequenceDiagram.png)
+![PetCare Sequence Diagram](images/SequenceDiagram.png)  
+
+## Screen Navigation Flow
+![PetCare Navigation Flow](images/FlowChart.jpeg)
 
 ## Gantt Chart
 ![PetCare Porject Timeline](images/GanttChart.png)
