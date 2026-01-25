@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_app/create_account/signup_screen.dart';
 import 'package:petcare_app/login/login_screen.dart';
+import 'package:petcare_app/bottom_navigation/owner_navigation.dart';
+import 'package:petcare_app/bottom_navigation/clinic_navigation.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +25,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
+        '/owner_home': (context) => const OwnerNavigation(),
+        '/clinic_home': (context) => const ClinicNavigation(),
       },
     );
   }

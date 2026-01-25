@@ -154,7 +154,23 @@ class _LoginScreenState extends State<LoginScreen> {
 															textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
 														),
 														onPressed: () {
-															// TODO: wire up authentication flow.
+															final email = _emailController.text.trim();
+															final password = _passwordController.text;
+
+															// Development/testing credentials
+															if (email == 'owner@example.com' && password == 'password123') {
+																Navigator.pushReplacementNamed(context, '/owner_home');
+															} else if (email == 'clinic@example.com' && password == 'password123') {
+																Navigator.pushReplacementNamed(context, '/clinic_home');
+															} else {
+																// Show error message
+																ScaffoldMessenger.of(context).showSnackBar(
+																	const SnackBar(
+																		content: Text('Invalid email or password'),
+																		backgroundColor: Colors.red,
+																	),
+																);
+															}
 														},
 														child: const Text('Log in'),
 													),
