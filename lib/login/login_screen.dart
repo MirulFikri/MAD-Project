@@ -31,15 +31,12 @@ class _LoginScreenState extends State<LoginScreen> {
 							mainAxisSize: MainAxisSize.min,
 							crossAxisAlignment: CrossAxisAlignment.center,
 							children: [
-								CircleAvatar(
-									radius: 42,
-									backgroundColor: Colors.grey.shade300,
-									child: Icon(
-										Icons.person,
-										size: 48,
-										color: Colors.grey.shade600,
+								Image.asset(
+										'images/logo.png',
+                    width: 80,
+                    height: 80,
+										fit: BoxFit.contain,
 									),
-								),
 								const SizedBox(height: 24),
 								const Text(
 									'Welcome Back',

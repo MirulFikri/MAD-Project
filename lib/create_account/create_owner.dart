@@ -51,14 +51,11 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.grey.shade300,
-                      child: Icon(
-                        Icons.person,
-                        size: 44,
-                        color: Colors.grey.shade600,
-                      ),
+                    Image.asset(
+                      'images/petowner.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 16),
                     const Text(

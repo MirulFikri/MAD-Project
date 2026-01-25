@@ -17,15 +17,12 @@ class SignupScreen extends StatelessWidget {
 							mainAxisSize: MainAxisSize.min,
 							crossAxisAlignment: CrossAxisAlignment.center,
 							children: [
-								CircleAvatar(
-									radius: 40,
-									backgroundColor: Colors.grey.shade300,
-									child: Icon(
-										Icons.person,
-										size: 44,
-										color: Colors.grey.shade600,
+								Image.asset(
+										'images/logo.png',
+                    width: 80,
+                    height: 80,
+										fit: BoxFit.contain,
 									),
-								),
 								const SizedBox(height: 20),
 								const Text(
 									'Create Account',
@@ -148,15 +145,12 @@ class _RoleCard extends StatelessWidget {
 				child: Column(
 					crossAxisAlignment: CrossAxisAlignment.center,
 					children: [
-						CircleAvatar(
-							radius: 32,
-							backgroundColor: Colors.grey.shade300,
-							child: Icon(
-								Icons.pets,
-								size: 34,
-								color: Colors.grey.shade600,
+						Image.asset(
+								title == 'Pet Owner' ? 'images/petowner.png' : 'images/vetclinic.png',
+                width: 70,
+							  height: 70,
+								fit: BoxFit.contain,
 							),
-						),
 						const SizedBox(height: 14),
 						Text(
 							title,
