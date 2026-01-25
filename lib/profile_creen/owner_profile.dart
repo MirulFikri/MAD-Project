@@ -15,13 +15,10 @@ class OwnerProfile extends StatelessWidget {
 				child: Column(
 					crossAxisAlignment: CrossAxisAlignment.start,
 					children: [
-						const Text(
-							'Owner Profile',
-							style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-						),
+						const Center(child: Text('Owner Profile Screen')),
+            // log out button
 						const SizedBox(height: 16),
-						const Text('...'),
-						const Spacer(),
+						const Spacer(), // makes the log out button stay at the bottom
 						SizedBox(
 							width: double.infinity,
 							child: ElevatedButton.icon(

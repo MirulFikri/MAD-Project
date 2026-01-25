@@ -13,8 +13,7 @@ class _OwnerNavigationState extends State<OwnerNavigation> {
 
   final List<Widget> _screens = [
     const OwnerHomeScreen(),
-    const MyPetsScreen(),
-    const OwnerAppointmentsScreen(),
+    const ReminderScreen(),
     const FindClinicsScreen(),
     const OwnerProfile(),
   ];
@@ -23,7 +22,6 @@ class _OwnerNavigationState extends State<OwnerNavigation> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      // add log out
       child: Scaffold(
         body: _screens[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
@@ -38,22 +36,17 @@ class _OwnerNavigationState extends State<OwnerNavigation> {
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
-              label: 'Home',
+              label: 'Pets',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.pets_outlined),
-              activeIcon: Icon(Icons.pets),
-              label: 'My Pets',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_outlined),
-              activeIcon: Icon(Icons.calendar_today),
-              label: 'Appointments',
+              icon: Icon(Icons.notifications_none_outlined),
+              activeIcon: Icon(Icons.notifications_none),
+              label: 'Reminders',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.local_hospital_outlined),
               activeIcon: Icon(Icons.local_hospital),
-              label: 'Clinics',
+              label: 'Vets',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
@@ -74,32 +67,20 @@ class OwnerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Home')),
+      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Pets')),
       body: const Center(child: Text('Owner Home Screen')),
     );
   }
 }
 
-class MyPetsScreen extends StatelessWidget {
-  const MyPetsScreen({super.key});
+class ReminderScreen extends StatelessWidget {
+  const ReminderScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('My Pets')),
-      body: const Center(child: Text('My Pets Screen')),
-    );
-  }
-}
-
-class OwnerAppointmentsScreen extends StatelessWidget {
-  const OwnerAppointmentsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Appointments')),
-      body: const Center(child: Text('Appointments Screen')),
+      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Reminders')),
+      body: const Center(child: Text('Reminders Screen')),
     );
   }
 }
@@ -110,20 +91,8 @@ class FindClinicsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Find Clinics')),
-      body: const Center(child: Text('Find Clinics Screen')),
-    );
-  }
-}
-
-class OwnerProfileScreen extends StatelessWidget {
-  const OwnerProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Profile')),
-      body: const Center(child: Text('Owner Profile Screen')),
+      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Find Vet Clinics')),
+      body: const Center(child: Text('Find Vet Clinics Screen')),
     );
   }
 }

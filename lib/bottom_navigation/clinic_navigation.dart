@@ -20,8 +20,8 @@ class _ClinicNavigationState extends State<ClinicNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         body: _screens[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
@@ -93,18 +93,6 @@ class ClinicAppointmentsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Appointments')),
       body: const Center(child: Text('Clinic Appointments Screen')),
-    );
-  }
-}
-
-class ClinicProfileScreen extends StatelessWidget {
-  const ClinicProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Clinic Profile')),
-      body: const Center(child: Text('Clinic Profile Screen')),
     );
   }
 }

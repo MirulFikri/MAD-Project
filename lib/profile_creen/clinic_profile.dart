@@ -7,17 +7,8 @@ class ClinicProfile extends StatelessWidget {
 	Widget build(BuildContext context) {
 		return Scaffold(
 			appBar: AppBar(
-				title: const Text('Clinic Profile'),
+				title: const Text('Profile'),
 				automaticallyImplyLeading: false,
-				actions: [
-					TextButton.icon(
-						onPressed: () {
-							Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-						},
-						icon: const Icon(Icons.logout, color: Colors.redAccent),
-						label: const Text('Log out', style: TextStyle(color: Colors.redAccent)),
-					),
-				],
 			),
 			body: Padding(
 				padding: const EdgeInsets.all(16),
@@ -28,8 +19,10 @@ class ClinicProfile extends StatelessWidget {
 							'Vet Clinic Profile',
 							style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
 						),
-						const SizedBox(height: 16),
+            // add clinic profile details here
 						const Text('...'),
+            // log out button
+						const SizedBox(height: 16),
 						const Spacer(),
 						SizedBox(
 							width: double.infinity,
@@ -53,3 +46,18 @@ class ClinicProfile extends StatelessWidget {
 		);
 	}
 }
+
+
+
+
+/*
+actions: [
+					TextButton.icon(
+						onPressed: () {
+							Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+						},
+						icon: const Icon(Icons.logout, color: Colors.redAccent),
+						label: const Text('Log out', style: TextStyle(color: Colors.redAccent)),
+					),
+				],
+*/
