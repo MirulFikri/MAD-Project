@@ -3,8 +3,15 @@ import 'package:petcare_app/create_account/signup_screen.dart';
 import 'package:petcare_app/login/login_screen.dart';
 import 'package:petcare_app/bottom_navigation/owner_navigation.dart';
 import 'package:petcare_app/bottom_navigation/clinic_navigation.dart';
+import 'reminder_screen.dart';
+import 'notification_service.dart';
 
-void main() {
+void main() async{
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await NotificationService().init();
+  
   runApp(const MyApp());
 }
 
@@ -27,6 +34,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignupScreen(),
         '/owner_home': (context) => const OwnerNavigation(),
         '/clinic_home': (context) => const ClinicNavigation(),
+        '/reminders': (context) => const ReminderScreen(),
       },
     );
   }
