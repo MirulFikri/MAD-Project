@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'notification_service.dart';
+import 'package:petcare_app/services/notification_service.dart';
 
 class ReminderScreen extends StatefulWidget {
   const ReminderScreen({super.key});
@@ -279,4 +279,5 @@ class _ReminderScreenState extends State<ReminderScreen> {
       ),
     );
   }
+
 }
