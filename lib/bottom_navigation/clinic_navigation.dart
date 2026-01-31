@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_app/profile_creen/clinic_profile.dart';
+import 'package:petcare_app/clinic_dashboard/vet_dashboard.dart';
+import 'package:petcare_app/clinic_dashboard/appointments.dart';
+import 'package:petcare_app/clinic_dashboard/patients.dart';
 
 class ClinicNavigation extends StatefulWidget {
   const ClinicNavigation({super.key});
@@ -12,9 +15,9 @@ class _ClinicNavigationState extends State<ClinicNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const ClinicHomeScreen(),
-    const PatientsScreen(),
-    const ClinicAppointmentsScreen(),
+    const VetDashboard(),
+    const PatientsPage(),
+    const AppointmentsPage(),
     const ClinicProfile(),
   ];
 
@@ -61,38 +64,4 @@ class _ClinicNavigationState extends State<ClinicNavigation> {
 }
 
 // Placeholder screens - create these files later
-class ClinicHomeScreen extends StatelessWidget {
-  const ClinicHomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Dashboard')),
-      body: const Center(child: Text('Clinic Dashboard Screen')),
-    );
-  }
-}
-
-class PatientsScreen extends StatelessWidget {
-  const PatientsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Patients')),
-      body: const Center(child: Text('Patients Screen')),
-    );
-  }
-}
-
-class ClinicAppointmentsScreen extends StatelessWidget {
-  const ClinicAppointmentsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Appointments')),
-      body: const Center(child: Text('Clinic Appointments Screen')),
-    );
-  }
-}
+// The screens are implemented in lib/clinic_dashboard/*.dart
