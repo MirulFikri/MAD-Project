@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_app/profile_creen/owner_profile.dart';
 import 'package:petcare_app/profile_creen/pet_profile.dart';
+import 'package:petcare_app/reminders/reminder_screen.dart';
 import 'package:petcare_app/vet_finder/find_clinics_screen.dart';
 
 class OwnerNavigation extends StatefulWidget {
@@ -220,19 +221,6 @@ class _NavigationCard extends StatelessWidget {
   }
 }
 
-class ReminderScreen extends StatelessWidget {
-  const ReminderScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Reminders'),
-      ),
-      body: const Center(child: Text('Reminders Screen')),
-    );
-  }
-}
 
 // `FindClinicsScreen` is provided by `lib/vet_finder/find_clinics_screen.dart`.

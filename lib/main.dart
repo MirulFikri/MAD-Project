@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignupScreen(),
         '/owner_home': (context) => const OwnerNavigation(),
         '/clinic_home': (context) => const ClinicNavigation(),
-        '/reminders': (context) => const ReminderScreen(),
+        '/reminders': (context) => const reminder.ReminderScreen(),
       },
     );
   }
