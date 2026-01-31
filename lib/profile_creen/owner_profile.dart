@@ -1,43 +1,207 @@
 import 'package:flutter/material.dart';
 
 class OwnerProfile extends StatelessWidget {
-	const OwnerProfile({super.key});
+  const OwnerProfile({super.key});
 
-	@override
-	Widget build(BuildContext context) {
-		return Scaffold(
-			appBar: AppBar(
-				title: const Text('Profile'),
-				automaticallyImplyLeading: false,
-			),
-			body: Padding(
-				padding: const EdgeInsets.all(16),
-				child: Column(
-					crossAxisAlignment: CrossAxisAlignment.start,
-					children: [
-						const Center(child: Text('Owner Profile Screen')),
-            // log out button
-						const SizedBox(height: 16),
-						const Spacer(), // makes the log out button stay at the bottom
-						SizedBox(
-							width: double.infinity,
-							child: ElevatedButton.icon(
-								style: ElevatedButton.styleFrom(
-									backgroundColor: Colors.redAccent,
-									foregroundColor: Colors.white,
-									elevation: 0,
-									shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-								),
-								onPressed: () {
-									Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-								},
-								icon: const Icon(Icons.logout),
-								label: const Text('Log out'),
-							),
-						),
-					],
-				),
-			),
-		);
-	}
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFEFF7FF),
+
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Profile'),
+        centerTitle: true,
+      ),
+
+      // ✅ SCROLLABLE
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // ===== PROFILE HEADER =====
+            _buildProfileHeader(),
+
+            const SizedBox(height: 24),
+
+            // ===== ACCOUNT INFO =====
+            _buildInfoCard(
+              title: 'Account Information',
+              children: const [
+                _InfoRow(
+                  icon: Icons.person_outline,
+                  label: 'Name',
+                  value: 'John Doe',
+                ),
+                _InfoRow(
+                  icon: Icons.email_outlined,
+                  label: 'Email',
+                  value: 'johndoe@email.com',
+                ),
+                _InfoRow(
+                  icon: Icons.phone_outlined,
+                  label: 'Phone',
+                  value: '012-345 6789',
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // ===== PET INFO =====
+            _buildInfoCard(
+              title: 'My Pets',
+              children: const [
+                _InfoRow(icon: Icons.pets, label: 'Pet Name', value: 'Buddy'),
+                _InfoRow(
+                  icon: Icons.category_outlined,
+                  label: 'Type',
+                  value: 'Dog',
+                ),
+                _InfoRow(
+                  icon: Icons.cake_outlined,
+                  label: 'Age',
+                  value: '3 years',
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // ===== ACTION BUTTONS =====
+            ElevatedButton.icon(
+              onPressed: () {
+                // TODO: Navigate to edit profile
+              },
+              icon: const Icon(Icons.edit),
+              label: const Text('Edit Profile'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            OutlinedButton.icon(
+              onPressed: () {
+                _showLogoutDialog(context);
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text('Log Out'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                foregroundColor: Colors.red,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================= WIDGETS =================
+
+  Widget _buildProfileHeader() {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 50,
+          backgroundColor: Colors.blue.shade100,
+          child: const Icon(Icons.person, size: 50, color: Colors.blue),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'John Doe',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        Text('Pet Owner', style: TextStyle(color: Colors.grey.shade600)),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Log Out'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            },
+            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ================= INFO ROW =================
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.blue),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Text(value, style: TextStyle(color: Colors.grey.shade700)),
+        ],
+      ),
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_app/profile_creen/owner_profile.dart';
 import 'package:petcare_app/profile_creen/pet_profile.dart';
+import 'package:petcare_app/vet_finder/find_clinics_screen.dart';
 
 class OwnerNavigation extends StatefulWidget {
   const OwnerNavigation({super.key});
@@ -56,7 +57,7 @@ class _OwnerNavigationState extends State<OwnerNavigation> {
             ),
           ],
         ),
-      )
+      ),
     );
   }
 }
@@ -200,11 +201,7 @@ class _NavigationCard extends StatelessWidget {
                 color: color.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                size: 32,
-                color: color,
-              ),
+              child: Icon(icon, size: 32, color: color),
             ),
             const SizedBox(height: 12),
             Text(
@@ -229,20 +226,13 @@ class ReminderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Reminders')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Reminders'),
+      ),
       body: const Center(child: Text('Reminders Screen')),
     );
   }
 }
 
-class FindClinicsScreen extends StatelessWidget {
-  const FindClinicsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('Find Vet Clinics')),
-      body: const Center(child: Text('Find Vet Clinics Screen')),
-    );
-  }
-}
+// `FindClinicsScreen` is provided by `lib/vet_finder/find_clinics_screen.dart`.
