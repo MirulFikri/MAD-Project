@@ -3,7 +3,7 @@ import 'package:petcare_app/create_account/signup_screen.dart';
 import 'package:petcare_app/login/login_screen.dart';
 import 'package:petcare_app/bottom_navigation/owner_navigation.dart';
 import 'package:petcare_app/bottom_navigation/clinic_navigation.dart';
-import 'package:petcare_app/reminders/reminder_screen.dart';
+import 'package:petcare_app/reminders/reminder_screen.dart' as reminder;
 import 'package:petcare_app/services/notification_service.dart';
 
 void main() async{
