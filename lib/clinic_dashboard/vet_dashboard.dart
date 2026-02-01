@@ -80,178 +80,134 @@ class _VetDashboardState extends State<VetDashboard> {
       a.date.isBefore(endOfWeek.add(const Duration(days: 1)))
     ).toList();
     final totalAppointments = appointments.length;
-    final confirmedCount = appointments.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFF7FF),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Veterinary Dashboard', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                        SizedBox(height: 4),
-                        Text('Welcome back, Dr. Anderson', style: TextStyle(color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                  // Notification bell with badge
-                  Stack(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.notifications_none),
-                      ),
-                      Positioned(
-                        right: 6,
-                        top: 6,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                          constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                          child: const Center(
-                            child: Text('3', style: TextStyle(color: Colors.white, fontSize: 11)),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Stats grid - TODO: Replace with Firebase data
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatCard(
-                      color: Colors.blue,
-                      icon: Icons.calendar_today,
-                      number: todayAppointments.length.toString(),
-                      label: "Today's Appointments",
-                      trend: '+${todayAppointments.length} today',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      color: Colors.green,
-                      icon: Icons.people,
-                      number: thisWeekAppointments.length.toString(),
-                      label: 'This Week',
-                      trend: '+${thisWeekAppointments.length} this week',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      color: Colors.amber,
-                      icon: Icons.description,
-                      number: totalAppointments.toString(),
-                      label: 'Total Confirmed',
-                      trend: '${totalAppointments} confirmed',
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Main content - 2 column layout
-              Expanded(
-                child: Row(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Left column
                     Expanded(
-                      flex: 2,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Today\'s Appointments', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                              ElevatedButton.icon(
-                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CreateAppointmentPage(onAppointmentCreated: _addAppointment))).then((_) => setState(() {})),
-                                icon: const Icon(Icons.add, size: 18),
-                                label: const Text('New'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : ListView.builder(
-                                  itemCount: todayAppointments.isEmpty ? 1 : todayAppointments.length,
-                                  itemBuilder: (_, i) => todayAppointments.isEmpty
-                                      ? const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('No appointments today')))
-                                      : _AppointmentTileWithDelete(
-                                          appointment: todayAppointments[i],
-                                          onDelete: () async {
-                                            // Optionally implement delete from Firestore
-                                            setState(() => appointments.removeWhere((a) => a.id == todayAppointments[i].id));
-                                          },
-                                        ),
-                                ),
-                          ),
+                          Text('Veterinary Dashboard', style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 18 : 20, fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 4),
+                          Text('Welcome back, Dr. Anderson', style: TextStyle(color: Colors.grey, fontSize: MediaQuery.of(context).size.width < 400 ? 11 : 13)),
                         ],
                       ),
                     ),
-
-                    const SizedBox(width: 16),
-
-                    // Right column - Alerts
-                    Expanded(
-                      flex: 1,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Alerts', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(12)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text('Emergency: Patient in critical condition', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
-                                SizedBox(height: 6),
-                                Text('Room 3 — immediate attention required', style: TextStyle(color: Colors.red)),
-                              ],
+                    // Notification bell with badge
+                    Stack(
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(Icons.notifications_none, size: MediaQuery.of(context).size.width < 400 ? 22 : 24),
+                        ),
+                        Positioned(
+                          right: 6,
+                          top: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                            constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                            child: Center(
+                              child: Text('3', style: TextStyle(color: Colors.white, fontSize: MediaQuery.of(context).size.width < 400 ? 9 : 11)),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(color: Colors.amber[50], borderRadius: BorderRadius.circular(12)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text('2 pending lab reports', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.orange)),
-                                SizedBox(height: 6),
-                                Text('Review when available', style: TextStyle(color: Colors.orange)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 16),
+
+                // Stats grid - Responsive layout
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double spacing = 12;
+                    final double minCellWidth = 100;
+                    final int crossAxisCount = (constraints.maxWidth / (minCellWidth + spacing)).floor().clamp(1, 3);
+                    return GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: spacing,
+                      mainAxisSpacing: spacing,
+                      childAspectRatio: 0.85,
+                      children: [
+                        _StatCard(
+                          color: Colors.blue,
+                          icon: Icons.calendar_today,
+                          number: todayAppointments.length.toString(),
+                          label: "Today's Appointments",
+                          trend: '+${todayAppointments.length} today',
+                        ),
+                        _StatCard(
+                          color: Colors.green,
+                          icon: Icons.people,
+                          number: thisWeekAppointments.length.toString(),
+                          label: 'This Week',
+                          trend: '+${thisWeekAppointments.length} this week',
+                        ),
+                        _StatCard(
+                          color: Colors.amber,
+                          icon: Icons.description,
+                          number: totalAppointments.toString(),
+                          label: 'Total Confirmed',
+                          trend: '${totalAppointments} confirmed',
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Main content
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Today\'s Appointments', style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 14 : 16, fontWeight: FontWeight.w700)),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CreateAppointmentPage(onAppointmentCreated: _addAppointment))).then((_) => setState(() {})),
+                          icon: Icon(Icons.add, size: MediaQuery.of(context).size.width < 400 ? 16 : 18),
+                          label: Text('New', style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 12 : 14)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 300,
+                      child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            itemCount: todayAppointments.isEmpty ? 1 : todayAppointments.length,
+                            itemBuilder: (_, i) => todayAppointments.isEmpty
+                                ? const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('No appointments today')))
+                                : _AppointmentTileWithDelete(
+                                    appointment: todayAppointments[i],
+                                    onDelete: () async {
+                                      setState(() => appointments.removeWhere((a) => a.id == todayAppointments[i].id));
+                                    },
+                                  ),
+                          ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -269,28 +225,38 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double iconSize = MediaQuery.of(context).size.width < 400 ? 24 : 28;
+    final double numberFontSize = MediaQuery.of(context).size.width < 400 ? 16 : 18;
+    final double labelFontSize = MediaQuery.of(context).size.width < 400 ? 10 : 12;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)]),
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: iconSize),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(number, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(label, style: TextStyle(color: Colors.grey[700], fontSize: 12)),
-              ],
-            ),
+          const SizedBox(height: 8),
+          Text(number, style: TextStyle(fontSize: numberFontSize, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.grey[700], fontSize: labelFontSize),
           ),
-          Text(trend, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+          const SizedBox(height: 2),
+          Text(
+            trend,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.grey[600], fontSize: labelFontSize),
+          ),
         ],
       ),
     );
@@ -305,6 +271,10 @@ class _AppointmentTileWithDelete extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double timeFontSize = MediaQuery.of(context).size.width < 400 ? 12 : 14;
+    final double petNameFontSize = MediaQuery.of(context).size.width < 400 ? 13 : 15;
+    final double statusFontSize = MediaQuery.of(context).size.width < 400 ? 10 : 12;
+    
     Color statusColor = Colors.grey;
     if (appointment.status == 'Confirmed') statusColor = Colors.green;
     if (appointment.status == 'Pending') statusColor = Colors.orange;
@@ -316,17 +286,17 @@ class _AppointmentTileWithDelete extends StatelessWidget {
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8)]),
       child: Row(
         children: [
-          Container(
+          SizedBox(
             width: 60,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(appointment.formatTime(), style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(appointment.formatTime(), style: TextStyle(fontWeight: FontWeight.w700, fontSize: timeFontSize)),
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                   decoration: BoxDecoration(color: statusColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                  child: Text(appointment.status, style: TextStyle(color: statusColor, fontSize: 12)),
+                  child: Text(appointment.status, style: TextStyle(color: statusColor, fontSize: statusFontSize)),
                 ),
               ],
             ),
@@ -336,9 +306,9 @@ class _AppointmentTileWithDelete extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${appointment.petName} — ${appointment.type}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text('${appointment.petName} — ${appointment.type}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: petNameFontSize)),
                 const SizedBox(height: 4),
-                Text(appointment.ownerName, style: TextStyle(color: Colors.grey[700])),
+                Text(appointment.ownerName, style: TextStyle(color: Colors.grey[700], fontSize: petNameFontSize - 2)),
               ],
             ),
           ),
