@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'package:petcare_app/profile_screen/edit_owner_profile.dart';
 
 class OwnerProfile extends StatelessWidget {
   const OwnerProfile({super.key});
@@ -10,7 +11,6 @@ class OwnerProfile extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFF7FF),
-
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text('Profile'),
@@ -19,8 +19,8 @@ class OwnerProfile extends StatelessWidget {
 
       // ✅ SCROLLABLE
       body: FutureBuilder<Map<String, dynamic>?>(
-        future: authService.currentUserId != null 
-            ? authService.getUserData(authService.currentUserId!) 
+        future: authService.currentUserId != null
+            ? authService.getUserData(authService.currentUserId!)
             : Future.value(null),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
@@ -70,7 +70,11 @@ class OwnerProfile extends StatelessWidget {
                 _buildInfoCard(
                   title: 'My Pets',
                   children: const [
-                    _InfoRow(icon: Icons.pets, label: 'Pet Name', value: 'Buddy'),
+                    _InfoRow(
+                      icon: Icons.pets,
+                      label: 'Pet Name',
+                      value: 'Buddy',
+                    ),
                     _InfoRow(
                       icon: Icons.category_outlined,
                       label: 'Type',
@@ -89,7 +93,10 @@ class OwnerProfile extends StatelessWidget {
                 // ===== ACTION BUTTONS =====
                 ElevatedButton.icon(
                   onPressed: () {
-                    // TODO: Navigate to edit profile
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const EditOwnerProfile()),
+                    );
                   },
                   icon: const Icon(Icons.edit),
                   label: const Text('Edit Profile'),
@@ -137,6 +144,7 @@ class OwnerProfile extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text('Pet Owner', style: TextStyle(color: Colors.grey.shade600)),
+        
       ],
     );
   }
@@ -146,10 +154,11 @@ class OwnerProfile extends StatelessWidget {
     required List<Widget> children,
   }) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      color: Colors.white,
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -200,8 +209,6 @@ class OwnerProfile extends StatelessWidget {
   }
 }
 
-// ================= INFO ROW =================
-
 class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -216,18 +223,16 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.blue),
-          const SizedBox(width: 12),
+          Icon(icon, size: 18, color: Colors.grey.shade700),
+          const SizedBox(width: 10),
+          Text('$label:', style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
+            child: Text(value, style: TextStyle(color: Colors.grey.shade600)),
           ),
-          Text(value, style: TextStyle(color: Colors.grey.shade700)),
         ],
       ),
     );
