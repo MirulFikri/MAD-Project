@@ -82,6 +82,7 @@ class OwnerProfile extends StatelessWidget {
 
             const SizedBox(height: 12),
 
+            // Logout Button
             OutlinedButton.icon(
               onPressed: () {
                 _showLogoutDialog(context);

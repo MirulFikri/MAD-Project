@@ -90,26 +90,46 @@ class ClinicProfile extends StatelessWidget {
             const SizedBox(height: 20),
 
             // --- LOGOUT BUTTON ---
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  // Navigate to Login and remove all previous routes
-                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-                },
-                icon: const Icon(Icons.logout),
-                label: const Text('Log out', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            OutlinedButton.icon(
+              onPressed: () {
+                _showLogoutDialog(context);
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text('Log Out'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                foregroundColor: Colors.red,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Log Out'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            },
+            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
