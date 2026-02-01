@@ -20,7 +20,7 @@ class _VetDashboardState extends State<VetDashboard> {
     final confirmedCount = appointments.where((a) => a.status == 'Confirmed').length;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFEFF7FF),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
