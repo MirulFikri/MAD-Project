@@ -5,12 +5,18 @@ import 'package:petcare_app/bottom_navigation/owner_navigation.dart';
 import 'package:petcare_app/bottom_navigation/clinic_navigation.dart';
 import 'package:petcare_app/reminders/reminder_screen.dart' as reminder;
 import 'package:petcare_app/services/notification_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async{
 
   WidgetsFlutterBinding.ensureInitialized();
 
   await NotificationService().init();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   runApp(const MyApp());
 }
