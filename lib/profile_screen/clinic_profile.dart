@@ -1,34 +1,55 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'edit_clinic_profile.dart';
 
-class ClinicProfile extends StatelessWidget {
+class ClinicProfile extends StatefulWidget {
   const ClinicProfile({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authService = AuthService();
+  State<ClinicProfile> createState() => _ClinicProfileState();
+}
 
+class _ClinicProfileState extends State<ClinicProfile> {
+  final AuthService _authService = AuthService();
+  int _refreshKey = 0;
+
+  void _refreshProfile() {
+    setState(() {
+      _refreshKey++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF7FF), // Light blue background
       appBar: AppBar(
-        title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Profile',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
       body: FutureBuilder<Map<String, dynamic>?>(
-        future: authService.currentUserId != null 
-            ? authService.getUserData(authService.currentUserId!) 
+        key: ValueKey(_refreshKey),
+        future: _authService.currentUserId != null
+            ? _authService.getUserData(_authService.currentUserId!)
             : Future.value(null),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final profile = snapshot.data ?? {};
-          final user = authService.currentUser;
-          final clinicName = (profile['clinicName'] as String?) ?? user?.displayName ?? 'Vet Clinic';
+          final user = _authService.currentUser;
+          final clinicName =
+              (profile['clinicName'] as String?) ??
+              user?.displayName ??
+              'Vet Clinic';
           final subtitle = 'Clinic Account';
           final email = (profile['email'] as String?) ?? user?.email ?? '—';
           final phone = (profile['phone'] as String?) ?? '—';
@@ -54,17 +75,27 @@ class ClinicProfile extends StatelessWidget {
                           radius: 50,
                           backgroundColor: Colors.blue[100],
                           // You can change this Icon to an Image later using AssetImage
-                          child: const Icon(Icons.local_hospital, size: 50, color: Colors.blue),
+                          child: const Icon(
+                            Icons.local_hospital,
+                            size: 50,
+                            color: Colors.blue,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 15),
                       Text(
                         clinicName,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         subtitle,
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -92,14 +123,22 @@ class ClinicProfile extends StatelessWidget {
                     children: [
                       const Text(
                         "Clinic Information",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       _buildProfileRow(Icons.email_outlined, "Email", email),
                       const Divider(height: 30),
                       _buildProfileRow(Icons.phone_outlined, "Phone", phone),
                       const Divider(height: 30),
-                      _buildProfileRow(Icons.location_on_outlined, "Location", location),
+                      _buildProfileRow(
+                        Icons.location_on_outlined,
+                        "Location",
+                        location,
+                      ),
                       const Divider(height: 30),
                       _buildProfileRow(Icons.access_time, "Hours", hours),
                     ],
@@ -108,10 +147,30 @@ class ClinicProfile extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
+                // --- EDIT BUTTON ---
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EditClinicProfile(),
+                      ),
+                    );
+                    _refreshProfile();
+                  },
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Edit Profile'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
                 // --- LOGOUT BUTTON ---
                 OutlinedButton.icon(
                   onPressed: () {
-                    _showLogoutDialog(context, authService);
+                    _showLogoutDialog(context, _authService);
                   },
                   icon: const Icon(Icons.logout),
                   label: const Text('Log Out'),
@@ -178,8 +237,14 @@ class ClinicProfile extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
           ],
         ),
       ],

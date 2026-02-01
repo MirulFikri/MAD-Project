@@ -23,13 +23,15 @@ class OwnerProfile extends StatelessWidget {
             ? authService.getUserData(authService.currentUserId!)
             : Future.value(null),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final profile = snapshot.data ?? {};
           final user = authService.currentUser;
-          final name = (profile['name'] as String?) ?? user?.displayName ?? 'Pet Owner';
+          final name =
+              (profile['name'] as String?) ?? user?.displayName ?? 'Pet Owner';
           final email = (profile['email'] as String?) ?? user?.email ?? '—';
           final phone = (profile['phone'] as String?) ?? '—';
 
@@ -66,36 +68,38 @@ class OwnerProfile extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // ===== PET INFO =====
+                // ===== PET SUMMARY =====
                 _buildInfoCard(
-                  title: 'My Pets',
-                  children: const [
+                  title: 'Pet Summary',
+                  children: [
                     _InfoRow(
                       icon: Icons.pets,
-                      label: 'Pet Name',
-                      value: 'Buddy',
+                      label: 'Total pets',
+                      value: '${profile['petsCount'] ?? '—'}',
                     ),
                     _InfoRow(
-                      icon: Icons.category_outlined,
-                      label: 'Type',
-                      value: 'Dog',
+                      icon: Icons.star_outline,
+                      label: 'Primary pet',
+                      value: (profile['primaryPetName'] as String?) ?? '—',
                     ),
                     _InfoRow(
-                      icon: Icons.cake_outlined,
-                      label: 'Age',
-                      value: '3 years',
+                      icon: Icons.event_outlined,
+                      label: 'Last visit',
+                      value: (profile['lastVisit'] as String?) ?? '—',
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 24),
 
-                // ===== ACTION BUTTONS =====
+                // --- EDIT BUTTON ---
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const EditOwnerProfile()),
+                      MaterialPageRoute(
+                        builder: (_) => const EditOwnerProfile(),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.edit),
@@ -107,7 +111,7 @@ class OwnerProfile extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // Logout Button
+                // --- LOGOUT BUTTON ---
                 OutlinedButton.icon(
                   onPressed: () {
                     _showLogoutDialog(context, authService);
@@ -144,7 +148,6 @@ class OwnerProfile extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text('Pet Owner', style: TextStyle(color: Colors.grey.shade600)),
-        
       ],
     );
   }

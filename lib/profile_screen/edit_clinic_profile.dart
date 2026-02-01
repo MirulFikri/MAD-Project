@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
-class EditOwnerProfile extends StatefulWidget {
-  const EditOwnerProfile({super.key});
+class EditClinicProfile extends StatefulWidget {
+  const EditClinicProfile({super.key});
 
   @override
-  State<EditOwnerProfile> createState() => _EditOwnerProfileState();
+  State<EditClinicProfile> createState() => _EditClinicProfileState();
 }
 
-class _EditOwnerProfileState extends State<EditOwnerProfile> {
+class _EditClinicProfileState extends State<EditClinicProfile> {
   final _formKey = GlobalKey<FormState>();
   final _phoneCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController();
+  final _hoursCtrl = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = true;
   bool _isSaving = false;
@@ -24,6 +26,8 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
   @override
   void dispose() {
     _phoneCtrl.dispose();
+    _addressCtrl.dispose();
+    _hoursCtrl.dispose();
     super.dispose();
   }
 
@@ -59,7 +63,7 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                               radius: 48,
                               backgroundColor: Colors.blue.shade50,
                               child: const Icon(
-                                Icons.person,
+                                Icons.local_hospital,
                                 size: 48,
                                 color: Colors.blue,
                               ),
@@ -92,7 +96,7 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
 
                       const SizedBox(height: 18),
                       const Text(
-                        'Personal information',
+                        'Clinic information',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -120,6 +124,41 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                               validator: (v) => (v == null || v.isEmpty)
                                   ? 'Enter phone'
                                   : null,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _addressCtrl,
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(
+                                  Icons.location_on_outlined,
+                                ),
+                                labelText: 'Address',
+                                filled: true,
+                                fillColor: Colors.grey.shade100,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                              maxLines: 2,
+                              validator: (v) => (v == null || v.isEmpty)
+                                  ? 'Enter address'
+                                  : null,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _hoursCtrl,
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.access_time),
+                                labelText: 'Hours',
+                                hintText: 'e.g., Mon-Fri 9AM-5PM',
+                                filled: true,
+                                fillColor: Colors.grey.shade100,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -194,6 +233,8 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
     final data = await _authService.getUserData(uid);
     if (data != null) {
       _phoneCtrl.text = (data['phone'] as String?) ?? '';
+      _addressCtrl.text = (data['address'] as String?) ?? '';
+      _hoursCtrl.text = (data['hours'] as String?) ?? '';
     }
 
     if (mounted) {
@@ -216,8 +257,12 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
 
     final success = await _authService.updateUserProfile(
       uid: uid,
-      userType: 'owner',
-      data: {'phone': _phoneCtrl.text.trim()},
+      userType: 'clinic',
+      data: {
+        'phone': _phoneCtrl.text.trim(),
+        'address': _addressCtrl.text.trim(),
+        'hours': _hoursCtrl.text.trim(),
+      },
     );
 
     if (!mounted) return;
