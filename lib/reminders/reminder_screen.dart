@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_app/services/notification_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ReminderScreen extends StatefulWidget {
   const ReminderScreen({super.key});
@@ -9,36 +11,43 @@ class ReminderScreen extends StatefulWidget {
 }
 
 class _ReminderScreenState extends State<ReminderScreen> {
-  // Dummy data to simulate your "Pets"
-  final List<String> myPets = ['Fufu', 'Bubu', 'Oyen'];
+  // We don't need a local 'reminders' list anymore because StreamBuilder handles it!
 
-  // Initial Dummy Data so the screen isn't empty
-  final List<Map<String, dynamic>> reminders = [
-    {'id': 1, 'pet': 'Fufu', 'type': 'Feeding', 'time': '8.00 P.M'},
-    {'id': 2, 'pet': 'Fufu', 'type': 'Medication', 'time': '5.30 P.M'},
-    {'id': 3, 'pet': 'Bubu', 'type': 'Feeding', 'time': '7.00 P.M'},
-    {'id': 4, 'pet': 'Bubu', 'type': 'Grooming', 'time': '10.00 A.M'},
-  ];
-
-  // Helper to switch images based on pet name
-  // UPDATED: Now uses the "images/" path as requested
+  // --- 1. Helper for Pet Images ---
   String _getPetImage(String petName) {
-    switch (petName) {
-      case 'Fufu':
-        return 'images/logo.png';
-      case 'Bubu':
-        return 'images/logo.png';
-      case 'Oyen':
-        return 'images/logo.png';
-      default:
-        return 'images/logo.png'; // Ensure you have a default
+    // Basic logic to match names to assets
+    String name = petName.toLowerCase().trim();
+    if (name.contains('fufu')) return 'images/fufu.png';
+    if (name.contains('bubu')) return 'images/bubu.png';
+    if (name.contains('oyen')) return 'images/oyen.png';
+    // Default fallback
+    return 'images/cat_placeholder.png';
+  }
+
+  // --- 2. Helper for Pet Dropdown Query ---
+  Query<Map<String, dynamic>> _petQuery() {
+    final user = FirebaseAuth.instance.currentUser;
+    final base = FirebaseFirestore.instance.collection('pets');
+    if (user == null) return base;
+    return base.where('ownerId', isEqualTo: user.uid);
+  }
+
+  List<String> _extractPetNames(QuerySnapshot<Map<String, dynamic>> snapshot) {
+    final pets = <String>[];
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      final name = (data['name'] ?? data['petName'])?.toString().trim();
+      if (name != null && name.isNotEmpty) pets.add(name);
     }
+    return pets;
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7FF), // Light blue background
+      backgroundColor: const Color(0xFFEFF7FF),
       appBar: AppBar(
         title: const Text(
           'Reminders',
@@ -55,70 +64,99 @@ class _ReminderScreenState extends State<ReminderScreen> {
       ),
       body: Stack(
         children: [
-          // List of Reminders
-          Padding(
-            padding: const EdgeInsets.only(
-              bottom: 120,
-            ), // Leave space for the bottom button
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              itemCount: reminders.length,
-              itemBuilder: (context, index) {
-                return _buildReminderCard(index, reminders[index]);
+          // --- 3. THE "TABLE" (List of Reminders) ---
+          // Using StreamBuilder for real-time updates
+          if (user != null)
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('reminders')
+                  .where(
+                    'ownerId',
+                    isEqualTo: user.uid,
+                  ) // Filter by current user
+                  .orderBy(
+                    'scheduledAt',
+                    descending: false,
+                  ) // Sort by time (Soonest first)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                // Loading State
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                // Error State (Likely Index missing)
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        "Need Index! Check your debug console for the link.\nError: ${snapshot.error}",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  );
+                }
+
+                // Empty State
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No reminders yet',
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }
+
+                // Data List
+                final docs = snapshot.data!.docs;
+                return ListView.builder(
+                  padding: const EdgeInsets.only(
+                    bottom: 120,
+                    left: 20,
+                    right: 20,
+                    top: 10,
+                  ),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    // Pass the Doc ID so we can delete it easily
+                    return _buildReminderCard(docs[index].id, data);
+                  },
+                );
               },
             ),
-          ),
 
           // "Clear all reminders" Button
           Positioned(
             bottom: 100,
             right: 20,
-            child: GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Clear All Reminders?'),
-                    content: const Text(
-                      'Are you sure you want to delete all reminders?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            reminders.clear();
-                          });
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('All reminders cleared'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
+            left: 20,
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  _showClearAllDialog();
+                },
+                child: const Text(
+                  'Clear all reminders',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-              },
-              child: const Text(
-                'Clear all reminders',
-                style: TextStyle(fontSize: 16, color: Colors.red),
+                ),
               ),
             ),
           ),
 
-          // The Floating Add Button (Cyan +)
+          // The Floating Add Button
           Positioned(
-            bottom: 80,
+            bottom: 30,
             left: 0,
             right: 0,
             child: Center(
@@ -126,7 +164,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 height: 60,
                 width: 60,
                 child: FloatingActionButton(
-                  backgroundColor: const Color(0xFF00BCD4), // Cyan color
+                  backgroundColor: const Color(0xFF00BCD4),
                   shape: const CircleBorder(),
                   elevation: 4,
                   onPressed: _showAddReminderDialog,
@@ -141,12 +179,12 @@ class _ReminderScreenState extends State<ReminderScreen> {
   }
 
   // --- WIDGET: Single Reminder Card ---
-  Widget _buildReminderCard(int index, Map<String, dynamic> reminder) {
+  Widget _buildReminderCard(String docId, Map<String, dynamic> reminder) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFCEFE7), // Beige/Peach color
+        color: const Color(0xFFFCEFE7),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.black12, width: 1),
         boxShadow: [
@@ -166,12 +204,14 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundImage: AssetImage(_getPetImage(reminder['pet'])),
+                    backgroundImage: AssetImage(
+                      _getPetImage(reminder['pet'] ?? ''),
+                    ),
                     backgroundColor: Colors.white,
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    reminder['pet'].toUpperCase(),
+                    (reminder['pet'] ?? '').toString().toUpperCase(),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -185,7 +225,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 child: Text(
                   _buildCardText(reminder),
                   style: const TextStyle(
-                    fontWeight: FontWeight.w900, // Extra bold like the image
+                    fontWeight: FontWeight.w900,
                     fontSize: 15,
                     color: Colors.black87,
                   ),
@@ -198,12 +238,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
             top: 0,
             right: 0,
             child: GestureDetector(
-              onTap: () {
-                NotificationService().cancelNotification(reminder['id']);
-                setState(() {
-                  reminders.removeAt(index);
-                });
-              },
+              onTap: () => _deleteReminder(docId, reminder),
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(
@@ -220,19 +255,104 @@ class _ReminderScreenState extends State<ReminderScreen> {
   }
 
   String _buildCardText(Map<String, dynamic> r) {
-    // Formats text like: "Feed Fufu at 8.00 P.M"
-    if (r['type'] == 'Medication') {
-      return "Give Medication to ${r['pet']} at ${r['time']}";
-    } else if (r['type'] == 'Grooming') {
-      return "Grooming appointment today at ${r['time']}";
+    final type = r['type'] ?? '';
+    final pet = r['pet'] ?? '';
+    final time = r['time'] ?? '';
+
+    // Extract date from scheduledAt Timestamp if available
+    String dateStr = '';
+    if (r['scheduledAt'] != null) {
+      try {
+        final timestamp = r['scheduledAt'] as Timestamp;
+        final dateTime = timestamp.toDate();
+        final today = DateTime.now();
+
+        // Check if the appointment is today
+        if (dateTime.year == today.year &&
+            dateTime.month == today.month &&
+            dateTime.day == today.day) {
+          dateStr = 'today';
+        } else {
+          dateStr = '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+        }
+      } catch (e) {
+        dateStr = '';
+      }
     }
-    return "${r['type']} ${r['pet']} today at ${r['time']}";
+
+    final dateDisplay = dateStr.isNotEmpty ? ' on $dateStr' : '';
+
+    if (type == 'Medication')
+      return "Give Medication to $pet at $time$dateDisplay";
+    if (type == 'Grooming') return "Grooming appointment at $time$dateDisplay";
+    return "$type $pet at $time$dateDisplay";
   }
 
-  // --- DIALOG: Add New Reminder ---
+  // --- LOGIC: Delete Single Reminder ---
+  Future<void> _deleteReminder(String docId, Map<String, dynamic> data) async {
+    try {
+      // 1. Delete from Firestore
+      await FirebaseFirestore.instance
+          .collection('reminders')
+          .doc(docId)
+          .delete();
+
+      // 2. Cancel Local Notifications (both the appointment and 1-day-before)
+      if (data['notificationId'] != null) {
+        NotificationService().cancelNotification(data['notificationId']);
+      }
+      if (data['notificationIdOneDayBefore'] != null) {
+        NotificationService().cancelNotification(
+          data['notificationIdOneDayBefore'],
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error deleting: $e")));
+    }
+  }
+
+  // --- DIALOG: Clear All ---
+  void _showClearAllDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Reminders?'),
+        content: const Text('Are you sure you want to delete all reminders?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final user = FirebaseAuth.instance.currentUser;
+              if (user == null) return;
+
+              // Get all docs for this user and delete them
+              final snapshot = await FirebaseFirestore.instance
+                  .collection('reminders')
+                  .where('ownerId', isEqualTo: user.uid)
+                  .get();
+
+              for (var doc in snapshot.docs) {
+                await doc.reference.delete();
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- DIALOG: Add New Reminder (Same as before) ---
   void _showAddReminderDialog() {
     String? selectedPet;
     String? selectedType;
+    DateTime? selectedDate;
     TimeOfDay? selectedTime;
     String? selectedRemindMe;
     String? selectedRepeat;
@@ -243,9 +363,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return Dialog(
-              backgroundColor: const Color(
-                0xFFFCEFE7,
-              ), // Match the beige card color
+              backgroundColor: const Color(0xFFFCEFE7),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -255,7 +373,6 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Close X Button
                     Align(
                       alignment: Alignment.topRight,
                       child: GestureDetector(
@@ -271,7 +388,6 @@ class _ReminderScreenState extends State<ReminderScreen> {
                         ),
                       ),
                     ),
-
                     const Text(
                       "Create a new Reminder",
                       style: TextStyle(
@@ -281,13 +397,10 @@ class _ReminderScreenState extends State<ReminderScreen> {
                     ),
                     const SizedBox(height: 25),
 
-                    // Form Fields
                     _buildDialogRow(
                       "Choose pet :",
-                      _buildDropdown(
+                      _buildPetDropdown(
                         selectedPet,
-                        myPets,
-                        "Choose pet...",
                         (val) => setDialogState(() => selectedPet = val),
                       ),
                     ),
@@ -300,6 +413,38 @@ class _ReminderScreenState extends State<ReminderScreen> {
                         (val) => setDialogState(() => selectedType = val),
                       ),
                     ),
+
+                    _buildDialogRow(
+                      "Date :",
+                      GestureDetector(
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
+                          );
+                          if (date != null)
+                            setDialogState(() => selectedDate = date);
+                        },
+                        child: _buildInputBox(
+                          child: Text(
+                            selectedDate == null
+                                ? "e.g : 02/02/2026"
+                                : "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
+                            style: TextStyle(
+                              color: selectedDate == null
+                                  ? Colors.grey[600]
+                                  : Colors.black,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
                     _buildDialogRow(
                       "Time :",
                       GestureDetector(
@@ -326,11 +471,12 @@ class _ReminderScreenState extends State<ReminderScreen> {
                         ),
                       ),
                     ),
+
                     _buildDialogRow(
                       "Remind me :",
                       _buildDropdown(
                         selectedRemindMe,
-                        ["10 mins before", "30 mins before", "1 hour before"],
+                        ["10 mins before", "30 mins before"],
                         "Choose time...",
                         (val) => setDialogState(() => selectedRemindMe = val),
                       ),
@@ -339,7 +485,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                       "Repeat :",
                       _buildDropdown(
                         selectedRepeat,
-                        ["Everyday", "Never", "Weekends"],
+                        ["Everyday", "Never"],
                         "Choose day...",
                         (val) => setDialogState(() => selectedRepeat = val),
                       ),
@@ -347,23 +493,26 @@ class _ReminderScreenState extends State<ReminderScreen> {
 
                     const SizedBox(height: 25),
 
-                    // Green Check Button
                     GestureDetector(
                       onTap: () {
                         if (selectedPet != null &&
                             selectedType != null &&
+                            selectedDate != null &&
                             selectedTime != null) {
                           _addReminder(
                             selectedPet!,
                             selectedType!,
+                            selectedDate!,
                             selectedTime!,
+                            remindMe: selectedRemindMe,
+                            repeat: selectedRepeat,
                           );
                           Navigator.pop(context);
                         }
                       },
                       child: const CircleAvatar(
                         radius: 24,
-                        backgroundColor: Color(0xFF6CC57C), // Green
+                        backgroundColor: Color(0xFF6CC57C),
                         child: Icon(Icons.check, color: Colors.white, size: 30),
                       ),
                     ),
@@ -377,23 +526,30 @@ class _ReminderScreenState extends State<ReminderScreen> {
     );
   }
 
-  // --- LOGIC: Add Reminder ---
-  void _addReminder(String pet, String type, TimeOfDay time) {
-    final now = DateTime.now();
+  // --- LOGIC: Add Reminder to Firestore ---
+  Future<void> _addReminder(
+    String pet,
+    String type,
+    DateTime date,
+    TimeOfDay time, {
+    String? remindMe,
+    String? repeat,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     var scheduledDate = DateTime(
-      now.year,
-      now.month,
-      now.day,
+      date.year,
+      date.month,
+      date.day,
       time.hour,
       time.minute,
     );
-
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
     final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final reminderOneDayBefore =
+        id + 1; // Unique ID for the 1-day-before reminder
 
+    // 1. Schedule Local Notification for the actual appointment
     NotificationService().scheduleNotification(
       id: id,
       title: 'PetCare',
@@ -401,19 +557,34 @@ class _ReminderScreenState extends State<ReminderScreen> {
       scheduledTime: scheduledDate,
     );
 
-    setState(() {
-      reminders.add({
-        'id': id,
-        'pet': pet,
-        'type': type,
-        'time': time.format(context),
-      });
+    // 2. Schedule Local Notification 1 day before
+    final oneDayBeforeDate = scheduledDate.subtract(const Duration(days: 1));
+    NotificationService().scheduleNotification(
+      id: reminderOneDayBefore,
+      title: 'PetCare Reminder',
+      body:
+          'Reminder: $pet has $type appointment tomorrow at ${time.format(context)} ‼️',
+      scheduledTime: oneDayBeforeDate,
+    );
+
+    // 3. Add to Firestore
+    // Note: We use 'scheduledAt' for sorting, and 'createdAt' for auditing
+    await FirebaseFirestore.instance.collection('reminders').add({
+      'ownerId': user.uid,
+      'pet': pet,
+      'type': type,
+      'time': time.format(context),
+      'scheduledAt': Timestamp.fromDate(scheduledDate),
+      'createdAt': FieldValue.serverTimestamp(),
+      'notificationId': id, // Save this so we can cancel the alarm later
+      'notificationIdOneDayBefore':
+          reminderOneDayBefore, // Save the 1-day-before notification ID
+      'remindMe': remindMe,
+      'repeat': repeat,
     });
   }
 
-  // --- HELPERS: Dialog Widgets ---
-
-  // Row for "Label : Input"
+  // --- HELPERS ---
   Widget _buildDialogRow(String label, Widget input) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -424,17 +595,12 @@ class _ReminderScreenState extends State<ReminderScreen> {
             label,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
-          SizedBox(
-            width: 160, // Fixed width for alignment
-            height: 35,
-            child: input,
-          ),
+          SizedBox(width: 160, height: 35, child: input),
         ],
       ),
     );
   }
 
-  // Grey Box Container
   Widget _buildInputBox({required Widget child}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -442,13 +608,11 @@ class _ReminderScreenState extends State<ReminderScreen> {
       decoration: BoxDecoration(
         color: Colors.grey[300],
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.transparent),
       ),
       child: child,
     );
   }
 
-  // Custom Dropdown
   Widget _buildDropdown(
     String? value,
     List<String> items,
@@ -469,15 +633,34 @@ class _ReminderScreenState extends State<ReminderScreen> {
             hint,
             style: TextStyle(color: Colors.grey[600], fontSize: 13),
           ),
-          items: items.map((String val) {
-            return DropdownMenuItem<String>(
-              value: val,
-              child: Text(val, style: const TextStyle(fontSize: 13)),
-            );
-          }).toList(),
+          items: items
+              .map(
+                (val) => DropdownMenuItem(
+                  value: val,
+                  child: Text(val, style: const TextStyle(fontSize: 13)),
+                ),
+              )
+              .toList(),
           onChanged: onChanged,
         ),
       ),
+    );
+  }
+
+  Widget _buildPetDropdown(String? value, Function(String?) onChanged) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _petQuery().snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData)
+          return _buildInputBox(
+            child: Text(
+              "Loading...",
+              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+            ),
+          );
+        final pets = _extractPetNames(snapshot.data!);
+        return _buildDropdown(value, pets, 'Choose pet...', onChanged);
+      },
     );
   }
 }
