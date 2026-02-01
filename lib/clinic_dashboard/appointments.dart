@@ -18,7 +18,11 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       appBar: AppBar(
         title: const Text('Appointments'),
         actions: [
-          TextButton.icon(onPressed: () {}, icon: const Icon(Icons.add, color: Colors.white), label: const Text('New Appointment', style: TextStyle(color: Colors.white))),
+          TextButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text('New Appointment', style: TextStyle(color: Colors.white))
+          ),
         ],
       ),
       body: Padding(
@@ -28,10 +32,20 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             Row(
               children: [
                 Expanded(
-                  child: TextField(decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: 'Search appointments', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search), 
+                      hintText: 'Search appointments', 
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
+                    )
+                  ),
                 ),
                 const SizedBox(width: 8),
-                OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.filter_list), label: const Text('Filter')),
+                OutlinedButton.icon(
+                  onPressed: () {}, 
+                  icon: const Icon(Icons.filter_list), 
+                  label: const Text('Filter')
+                ),
               ],
             ),
 
@@ -43,14 +57,30 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 ToggleButtons(
                   isSelected: [!calendarMode, calendarMode],
                   onPressed: (i) => setState(() => calendarMode = i == 1),
-                  children: const [Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('List')), Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Calendar'))],
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12), 
+                      child: Text('List')
+                    ), 
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12), 
+                      child: Text('Calendar')
+                    )
+                  ],
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['All', 'Confirmed', 'Pending', 'Urgent'].map<Widget>((t) => Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(t), selected: statusFilter == t, onSelected: (_) => setState(() => statusFilter = t)))).toList(),
+                      children: ['All', 'Confirmed', 'Pending', 'Urgent'].map<Widget>((t) => Padding(
+                        padding: const EdgeInsets.only(right: 8), 
+                        child: ChoiceChip(
+                          label: Text(t), 
+                          selected: statusFilter == t, 
+                          onSelected: (_) => setState(() => statusFilter = t)
+                        )
+                      )).toList(),
                     ),
                   ),
                 ),
@@ -104,7 +134,16 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   children: [
                     Text('${i + 1}'),
                     const Spacer(),
-                    if (i % 7 == 1) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(6)), child: const Text('2 appts', style: TextStyle(fontSize: 10, color: Colors.blue)))
+                    if (i % 7 == 1) 
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), 
+                      decoration: BoxDecoration(color: Colors.blue[50], 
+                      borderRadius: BorderRadius.circular(6)), 
+                      child: const Text(
+                        '2 appts', 
+                        style: TextStyle(fontSize: 10, color: Colors.blue)
+                      )
+                    )
                   ],
                 ),
               ),
@@ -137,10 +176,33 @@ class _AppointmentCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Container(width: 68, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(time, style: const TextStyle(fontWeight: FontWeight.w700)), const SizedBox(height: 6), Text(duration, style: const TextStyle(color: Colors.grey))])),
+            Container(
+              width: 68, 
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, 
+                children: [
+                  Text(time, style: const TextStyle(fontWeight: FontWeight.w700)), 
+                  const SizedBox(height: 6), 
+                  Text(duration, style: const TextStyle(color: Colors.grey))
+                ]
+              )
+            ),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('$pet — $type', style: const TextStyle(fontWeight: FontWeight.w700)), const SizedBox(height: 4), Text(owner, style: const TextStyle(color: Colors.grey))])),
-            ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: Colors.green), child: const Text('Confirm')),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, 
+                children: [
+                  Text('$pet — $type', style: const TextStyle(fontWeight: FontWeight.w700)), 
+                  const SizedBox(height: 4), 
+                  Text(owner, style: const TextStyle(color: Colors.grey))
+                ]
+              )
+            ),
+            ElevatedButton(
+              onPressed: () {}, 
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green), 
+              child: const Text('Confirm')
+            ),
             const SizedBox(width: 8),
             OutlinedButton(onPressed: () {}, child: const Text('View')),
             const SizedBox(width: 8),
