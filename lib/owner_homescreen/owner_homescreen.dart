@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:petcare_app/owner_homescreen/add_pet.dart';
 import 'package:petcare_app/owner_homescreen/pet_profile.dart';
 import 'package:petcare_app/services/auth_service.dart';
+import 'package:petcare_app/owner_homescreen/owner_appointments.dart';
 
 // Placeholder screens - create these files later
 class OwnerHomeScreen extends StatefulWidget {
@@ -94,56 +95,63 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                 // Navigation Cards Grid (two cards on top, one centered below)
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final double spacing = 16; // same as original spacing
-                    final double cellWidth =
-                        (constraints.maxWidth - spacing) / 2;
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: cellWidth,
-                              child: _NavigationCard(
-                                icon: Icons.pets,
-                                label: 'Pet Profile',
-                                color: Colors.blue[400]!,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const PetProfile(),
-                                    ),
-                                  );
-                                },
-                              ),
+                    final double spacing = 16;
+                    final double minCellWidth = 160;
+                    final int crossAxisCount = (constraints.maxWidth / (minCellWidth + spacing)).floor().clamp(1, 3);
+                    final double cellWidth = (constraints.maxWidth - (spacing * (crossAxisCount - 1))) / crossAxisCount;
+                    final List<_NavigationCard> cards = [
+                      _NavigationCard(
+                        icon: Icons.pets,
+                        label: 'Pet Profile',
+                        color: Colors.blue[400]!,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PetProfile(),
                             ),
-                            const SizedBox(width: 16),
-                            SizedBox(
-                              width: cellWidth,
-                              child: _NavigationCard(
-                                icon: Icons.trending_up,
-                                label: 'Activity Tracking',
-                                color: Colors.green[400]!,
-                                onTap: () {
-                                  // Navigate to activity tracking
-                                },
-                              ),
+                          );
+                        },
+                      ),
+                      _NavigationCard(
+                        icon: Icons.trending_up,
+                        label: 'Activity Tracking',
+                        color: Colors.green[400]!,
+                        onTap: () {
+                          // Navigate to activity tracking
+                        },
+                      ),
+                      _NavigationCard(
+                        icon: Icons.add_circle_outline,
+                        label: 'Add Pet',
+                        color: Colors.purple[400]!,
+                        onTap: () => _showAddPetDialog(context),
+                      ),
+                      _NavigationCard(
+                        icon: Icons.calendar_today,
+                        label: 'Appointment',
+                        color: Colors.orange[400]!,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const OwnerAppointmentsPage(),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: SizedBox(
-                            width: cellWidth,
-                            child: _NavigationCard(
-                              icon: Icons.add_circle_outline,
-                              label: 'Add Pet',
-                              color: Colors.purple[400]!,
-                              onTap: () => _showAddPetDialog(context),
-                            ),
-                          ),
-                        ),
-                      ],
+                          );
+                        },
+                      ),
+                    ];
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
+                        childAspectRatio: cellWidth / 120,
+                      ),
+                      itemCount: cards.length,
+                      itemBuilder: (context, i) => cards[i],
                     );
                   },
                 ),
@@ -179,9 +187,12 @@ class _NavigationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double iconSize = MediaQuery.of(context).size.width < 400 ? 28 : 36;
+    final double fontSize = MediaQuery.of(context).size.width < 400 ? 13 : 15;
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        constraints: const BoxConstraints(minHeight: 100, minWidth: 100),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -202,14 +213,14 @@ class _NavigationCard extends StatelessWidget {
                 color: color.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, size: 32, color: color),
+              child: Icon(icon, size: iconSize, color: color),
             ),
             const SizedBox(height: 12),
             Text(
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[900],
               ),
