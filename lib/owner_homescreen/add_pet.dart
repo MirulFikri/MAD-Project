@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:petcare_app/services/auth_service.dart';
 
 class AddPetModal extends StatefulWidget {
   const AddPetModal({super.key});
@@ -16,6 +18,10 @@ class _AddPetModalState extends State<AddPetModal> {
   final TextEditingController _birthdayController = TextEditingController();
   String? _selectedGender;
 
+  final AuthService _authService = AuthService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _isSaving = false;
+
   @override
   void dispose() {
     _petNameController.dispose();
@@ -25,6 +31,74 @@ class _AddPetModalState extends State<AddPetModal> {
     _heightController.dispose();
     _birthdayController.dispose();
     super.dispose();
+  }
+
+  Future<void> _savePet() async {
+    // Validation
+    if (_petNameController.text.isEmpty) {
+      _showError('Please enter pet name');
+      return;
+    }
+    if (_breedController.text.isEmpty) {
+      _showError('Please enter breed');
+      return;
+    }
+    if (_selectedGender == null) {
+      _showError('Please select gender');
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final uid = _authService.currentUserId;
+      if (uid == null) {
+        _showError('No user logged in');
+        return;
+      }
+
+      // Use pet name as document ID
+      final petId = _petNameController.text.toLowerCase().replaceAll(' ', '_');
+
+      await _firestore.collection('pets').doc(petId).set({
+        'name': _petNameController.text.trim(),
+        'breed': _breedController.text.trim(),
+        'age': _ageController.text.trim(),
+        'weight': _weightController.text.trim(),
+        'height': _heightController.text.trim(),
+        'gender': _selectedGender,
+        'birthday': _birthdayController.text.trim(),
+        'ownerId': uid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_petNameController.text} added successfully!'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      _showError('Error adding pet: $e');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -49,7 +123,10 @@ class _AddPetModalState extends State<AddPetModal> {
                   children: [
                     const Text(
                       'Add Pet',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
@@ -67,7 +144,11 @@ class _AddPetModalState extends State<AddPetModal> {
                 const SizedBox(height: 24),
 
                 // Pet Name
-                _buildTextField('Pet Name', _petNameController, 'Enter pet name'),
+                _buildTextField(
+                  'Pet Name',
+                  _petNameController,
+                  'Enter pet name',
+                ),
                 const SizedBox(height: 16),
 
                 // Breed
@@ -79,16 +160,27 @@ class _AddPetModalState extends State<AddPetModal> {
                 const SizedBox(height: 16),
 
                 // Weight
-                _buildTextField('Weight', _weightController, 'Enter weight (kg)'),
+                _buildTextField(
+                  'Weight',
+                  _weightController,
+                  'Enter weight (kg)',
+                ),
                 const SizedBox(height: 16),
 
                 // Height
-                _buildTextField('Height', _heightController, 'Enter height (cm)'),
+                _buildTextField(
+                  'Height',
+                  _heightController,
+                  'Enter height (cm)',
+                ),
                 const SizedBox(height: 16),
 
                 // Gender Dropdown
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Colors.grey[300]!),
@@ -101,9 +193,13 @@ class _AddPetModalState extends State<AddPetModal> {
                       isExpanded: true,
                       items: const [
                         DropdownMenuItem(value: 'Male', child: Text('Male')),
-                        DropdownMenuItem(value: 'Female', child: Text('Female')),
+                        DropdownMenuItem(
+                          value: 'Female',
+                          child: Text('Female'),
+                        ),
                       ],
-                      onChanged: (value) => setState(() => _selectedGender = value),
+                      onChanged: (value) =>
+                          setState(() => _selectedGender = value),
                     ),
                   ),
                 ),
@@ -129,18 +225,26 @@ class _AddPetModalState extends State<AddPetModal> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Save pet data to Firebase
-                          Navigator.pop(context);
-                        },
+                        onPressed: _isSaving ? null : _savePet,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           backgroundColor: Colors.blue[400],
                         ),
-                        child: const Text(
-                          'Add Pet',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                'Add Pet',
+                                style: TextStyle(color: Colors.white),
+                              ),
                       ),
                     ),
                   ],
@@ -153,7 +257,11 @@ class _AddPetModalState extends State<AddPetModal> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, String hintText) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    String hintText,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -179,7 +287,10 @@ class _AddPetModalState extends State<AddPetModal> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.blue[400]!),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
           ),
         ),
       ],
