@@ -14,7 +14,7 @@ class ClinicProfile extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
@@ -52,38 +52,36 @@ class ClinicProfile extends StatelessWidget {
             const SizedBox(height: 30),
 
             // --- DETAILS SECTION ---
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Clinic Information",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildProfileRow(Icons.email_outlined, "Email", "contact@happypaws.com"),
-                    const Divider(height: 30),
-                    _buildProfileRow(Icons.phone_outlined, "Phone", "+60 12-345 6789"),
-                    const Divider(height: 30),
-                    _buildProfileRow(Icons.location_on_outlined, "Location", "Gombak, Kuala Lumpur"),
-                    const Divider(height: 30),
-                    _buildProfileRow(Icons.access_time, "Hours", "9:00 AM - 9:00 PM"),
-                  ],
-                ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Clinic Information",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildProfileRow(Icons.email_outlined, "Email", "contact@happypaws.com"),
+                  const Divider(height: 30),
+                  _buildProfileRow(Icons.phone_outlined, "Phone", "+60 12-345 6789"),
+                  const Divider(height: 30),
+                  _buildProfileRow(Icons.location_on_outlined, "Location", "Gombak, Kuala Lumpur"),
+                  const Divider(height: 30),
+                  _buildProfileRow(Icons.access_time, "Hours", "9:00 AM - 9:00 PM"),
+                ],
               ),
             ),
 
