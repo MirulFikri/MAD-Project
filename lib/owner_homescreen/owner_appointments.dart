@@ -10,7 +10,54 @@ class OwnerAppointmentsPage extends StatefulWidget {
 }
 
 class _OwnerAppointmentsPageState extends State<OwnerAppointmentsPage> {
-  List<Map<String, String>> appointments = [];
+  final AuthService _authService = AuthService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> appointments = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppointments();
+  }
+
+  String? _errorMsg;
+  Future<void> _loadAppointments() async {
+    final uid = _authService.currentUserId;
+    print('[DEBUG] Current user UID: $uid');
+    if (uid == null) {
+      setState(() {
+        appointments = [];
+        _isLoading = false;
+        _errorMsg = null;
+      });
+      return;
+    }
+    try {
+        final snapshot = await _firestore
+          .collection('appointments')
+          .where('ownerId', isEqualTo: uid)
+          .orderBy('dateTime', descending: false)
+          .limit(20)
+          .get();
+      print('[DEBUG] Appointments fetched:');
+      for (var doc in snapshot.docs) {
+        print(doc.data());
+      }
+      setState(() {
+        appointments = snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+        _isLoading = false;
+        _errorMsg = null;
+      });
+    } catch (e) {
+      print('[DEBUG] Error loading appointments: $e');
+      setState(() {
+        appointments = [];
+        _isLoading = false;
+        _errorMsg = 'Failed to load appointments. Please try again.';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,51 +97,67 @@ class _OwnerAppointmentsPageState extends State<OwnerAppointmentsPage> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: appointments.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.calendar_today, size: 64, color: Colors.grey),
-                          const SizedBox(height: 12),
-                          const Text('No appointments yet', style: TextStyle(color: Colors.grey)),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: () => _openCreateAppointment(context),
-                            child: const Text('Create Appointment'),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: appointments.length,
-                      itemBuilder: (_, i) {
-                        final a = appointments[i];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            leading: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _errorMsg != null
+                      ? Center(child: Text(_errorMsg!, style: const TextStyle(color: Colors.red)))
+                      : appointments.isEmpty
+                          ? Column(
                               children: [
-                                Text(a['time'] ?? '', style: const TextStyle(fontWeight: FontWeight.w700)),
-                                const SizedBox(height: 4),
-                                Text(a['duration'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                const SizedBox(height: 32),
+                                // Empty space, but keep the button below
                               ],
+                            )
+                          : ListView.builder(
+                              itemCount: appointments.length,
+                              itemBuilder: (_, i) {
+                                final a = appointments[i];
+                                // Use dateTime (Timestamp) for display
+                                String timeStr = '';
+                                String dateStr = '';
+                                if (a['dateTime'] != null) {
+                                  final dt = a['dateTime'] is Timestamp
+                                      ? (a['dateTime'] as Timestamp).toDate()
+                                      : (a['dateTime'] as DateTime);
+                                  timeStr = TimeOfDay.fromDateTime(dt).format(context);
+                                  dateStr = '${dt.month}/${dt.day}/${dt.year}';
+                                } else {
+                                  timeStr = a['time'] ?? '';
+                                  dateStr = a['date'] ?? '';
+                                }
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(vertical: 8),
+                                  child: ListTile(
+                                    leading: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(timeStr, style: const TextStyle(fontWeight: FontWeight.w700)),
+                                        const SizedBox(height: 4),
+                                        Text(dateStr, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                      ],
+                                    ),
+                                    title: Text('${a['pet']} — ${a['type']}'),
+                                    subtitle: Text(a['vet'] ?? ''),
+                                    trailing: TextButton(
+                                      onPressed: () => _cancelAppointment(i),
+                                      child: const Text('Cancel'),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            title: Text('${a['pet']} — ${a['type']}'),
-                            subtitle: Text(a['vet'] ?? ''),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ElevatedButton(onPressed: () {}, child: const Text('View')),
-                                const SizedBox(width: 8),
-                                TextButton(onPressed: () => _cancelAppointment(i), child: const Text('Cancel')),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+
+                // ...existing code...
+            ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: ElevatedButton.icon(
+                onPressed: () => _openCreateAppointment(context),
+                icon: const Icon(Icons.add),
+                label: const Text('Create Appointment'),
+                style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 48)),
+              ),
             ),
           ],
         ),
@@ -102,8 +165,10 @@ class _OwnerAppointmentsPageState extends State<OwnerAppointmentsPage> {
     );
   }
 
-  void _cancelAppointment(int index) {
-    setState(() => appointments.removeAt(index));
+  void _cancelAppointment(int index) async {
+    final id = appointments[index]['id'];
+    await _firestore.collection('appointments').doc(id).delete();
+    await _loadAppointments();
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Appointment cancelled')));
   }
 
@@ -113,9 +178,43 @@ class _OwnerAppointmentsPageState extends State<OwnerAppointmentsPage> {
       isScrollControlled: true,
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: _CreateAppointmentForm(onCreate: (map) {
-          setState(() => appointments.add(map));
+        child: _CreateAppointmentForm(onCreate: (map) async {
+          final uid = _authService.currentUserId;
+          if (uid == null) return;
+          // Generate unique appointmentId (timestamp + uid)
+          final appointmentId = '${DateTime.now().millisecondsSinceEpoch}_$uid';
+          // Parse date and time to DateTime
+          DateTime? dateTime;
+          try {
+            final dateParts = (map['date'] as String).split('/');
+            final timeParts = (map['time'] as String).split(':');
+            final hour = int.tryParse(timeParts[0]) ?? 9;
+            final minute = int.tryParse(timeParts[1].split(' ')[0]) ?? 0;
+            final isPM = (map['time'] ?? '').toLowerCase().contains('pm');
+            int hour24 = hour;
+            if (isPM && hour < 12) hour24 += 12;
+            if (!isPM && hour == 12) hour24 = 0;
+            dateTime = DateTime(
+              DateTime.now().year, // fallback
+              int.tryParse(dateParts[0]) ?? 1,
+              int.tryParse(dateParts[1]) ?? 1,
+              hour24,
+              minute,
+            );
+          } catch (_) {
+            dateTime = DateTime.now();
+          }
+          final appointment = {
+            ...map,
+            'ownerId': uid,
+            'status': 'Pending',
+            'createdAt': FieldValue.serverTimestamp(),
+            'appointmentId': appointmentId,
+            'dateTime': dateTime,
+          };
+          await _firestore.collection('appointments').doc(appointmentId).set(appointment);
           Navigator.of(ctx).pop();
+          await _loadAppointments();
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Appointment created')));
         }),
       ),
@@ -133,7 +232,8 @@ class _CreateAppointmentForm extends StatefulWidget {
 
 class _CreateAppointmentFormState extends State<_CreateAppointmentForm> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController vetController = TextEditingController();
+  String? _selectedClinicId;
+  List<Map<String, dynamic>> _clinics = [];
   final TextEditingController notesController = TextEditingController();
   final AuthService _authService = AuthService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -144,11 +244,28 @@ class _CreateAppointmentFormState extends State<_CreateAppointmentForm> {
   String? _selectedPetId;
   List<Map<String, dynamic>> _userPets = [];
   bool _isLoadingPets = true;
+  bool _isLoadingClinics = true;
 
   @override
   void initState() {
     super.initState();
     _loadUserPets();
+    _loadClinics();
+  }
+  Future<void> _loadClinics() async {
+    try {
+      final clinics = await _authService.getAllClinics();
+      setState(() {
+        _clinics = clinics;
+        _isLoadingClinics = false;
+        if (clinics.isNotEmpty) {
+          _selectedClinicId = clinics.first['uid'] as String?;
+        }
+      });
+    } catch (e) {
+      print('Error loading clinics: $e');
+      setState(() => _isLoadingClinics = false);
+    }
   }
 
   Future<void> _loadUserPets() async {
@@ -219,10 +336,33 @@ class _CreateAppointmentFormState extends State<_CreateAppointmentForm> {
                   validator: (v) => (v == null) ? 'Please select a pet' : null,
                 ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: vetController,
-                decoration: const InputDecoration(labelText: 'Preferred vet/clinic', prefixIcon: Icon(Icons.local_hospital)),
-              ),
+              if (_isLoadingClinics)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: CircularProgressIndicator(),
+                )
+              else if (_clinics.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text('No clinics found.'),
+                )
+              else
+                DropdownButtonFormField<String>(
+                  value: _selectedClinicId,
+                  decoration: const InputDecoration(labelText: 'Preferred vet/clinic', prefixIcon: Icon(Icons.local_hospital)),
+                  items: _clinics
+                      .map((clinic) => DropdownMenuItem<String>(
+                            value: clinic['uid'] as String? ?? '',
+                            child: Text(clinic['clinicName']?.toString() ?? 'Unknown Clinic'),
+                          ))
+                      .toList(),
+                  onChanged: (value) => setState(() => _selectedClinicId = value),
+                  validator: (v) => (v == null) ? 'Please select a clinic' : null,
+                ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -284,10 +424,13 @@ class _CreateAppointmentFormState extends State<_CreateAppointmentForm> {
     final selectedPet = _userPets.firstWhere((p) => p['petId'] == _selectedPetId, orElse: () => {});
     final petName = selectedPet['name'] ?? 'Unknown Pet';
     
+    final selectedClinic = _clinics.firstWhere((c) => c['uid'] == _selectedClinicId, orElse: () => {});
+    final clinicName = selectedClinic['clinicName'] ?? 'Unknown Clinic';
     widget.onCreate({
       'pet': petName,
       'petId': _selectedPetId ?? '',
-      'vet': vetController.text,
+      'clinicId': _selectedClinicId ?? '',
+      'vet': clinicName,
       'date': dateStr,
       'time': timeStr,
       'type': _type,
@@ -298,7 +441,6 @@ class _CreateAppointmentFormState extends State<_CreateAppointmentForm> {
 
   @override
   void dispose() {
-    vetController.dispose();
     notesController.dispose();
     super.dispose();
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:petcare_app/services/auth_service.dart';
 
 class AppointmentsPage extends StatefulWidget {
   const AppointmentsPage({super.key});
@@ -8,9 +10,38 @@ class AppointmentsPage extends StatefulWidget {
 }
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
+  final AuthService _authService = AuthService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool calendarMode = false;
   String statusFilter = 'All';
   DateTime selectedMonth = DateTime.now();
+  List<Map<String, dynamic>> appointments = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppointments();
+  }
+
+  Future<void> _loadAppointments() async {
+    final uid = _authService.currentUserId;
+    if (uid == null) {
+      setState(() {
+        appointments = [];
+        _isLoading = false;
+      });
+      return;
+    }
+    final query = _firestore
+        .collection('appointments')
+        .where('clinicId', isEqualTo: uid);
+    final snapshot = await query.get();
+    setState(() {
+      appointments = snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +130,33 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Widget _buildListView() {
-    return ListView(
-      children: [
-        _AppointmentCard(time: '08:30', pet: 'Bella', owner: 'Mrs. Smith', type: 'Check-up', duration: '30m'),
-        _AppointmentCard(time: '09:00', pet: 'Max', owner: 'Mr. Lee', type: 'Vaccination', duration: '15m'),
-        _AppointmentCard(time: '10:15', pet: 'Luna', owner: 'Dr. Kim', type: 'Surgery Consult', duration: '45m'),
-      ],
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final filtered = statusFilter == 'All'
+        ? appointments
+        : appointments.where((a) => a['status'] == statusFilter).toList();
+    if (filtered.isEmpty) {
+      return const Center(child: Text('No appointments found.'));
+    }
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, i) {
+        final a = filtered[i];
+        return _AppointmentCard(
+          id: a['id'],
+          time: a['time'] ?? '',
+          pet: a['pet'] ?? '',
+          owner: a['ownerId'] ?? '',
+          type: a['type'] ?? '',
+          duration: a['duration'] ?? '',
+          status: a['status'] ?? 'Pending',
+          onStatusChange: (status) async {
+            await _firestore.collection('appointments').doc(a['id']).update({'status': status});
+            await _loadAppointments();
+          },
+        );
+      },
     );
   }
 
@@ -160,13 +212,26 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 }
 
+
 class _AppointmentCard extends StatelessWidget {
+  final String id;
   final String time;
   final String pet;
   final String owner;
   final String type;
   final String duration;
-  const _AppointmentCard({required this.time, required this.pet, required this.owner, required this.type, required this.duration});
+  final String status;
+  final void Function(String status) onStatusChange;
+  const _AppointmentCard({
+    required this.id,
+    required this.time,
+    required this.pet,
+    required this.owner,
+    required this.type,
+    required this.duration,
+    required this.status,
+    required this.onStatusChange,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -177,12 +242,12 @@ class _AppointmentCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 68, 
+              width: 68,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start, 
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(time, style: const TextStyle(fontWeight: FontWeight.w700)), 
-                  const SizedBox(height: 6), 
+                  Text(time, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
                   Text(duration, style: const TextStyle(color: Colors.grey))
                 ]
               )
@@ -190,23 +255,31 @@ class _AppointmentCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start, 
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('$pet — $type', style: const TextStyle(fontWeight: FontWeight.w700)), 
-                  const SizedBox(height: 4), 
+                  Text('$pet — $type', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 4),
                   Text(owner, style: const TextStyle(color: Colors.grey))
                 ]
               )
             ),
-            ElevatedButton(
-              onPressed: () {}, 
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green), 
-              child: const Text('Confirm')
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton(onPressed: () {}, child: const Text('View')),
-            const SizedBox(width: 8),
-            TextButton(onPressed: () {}, child: const Text('Cancel')),
+            if (status == 'Pending') ...[
+              ElevatedButton(
+                onPressed: () => onStatusChange('Confirmed'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                child: const Text('Accept'),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                onPressed: () => onStatusChange('Declined'),
+                child: const Text('Decline'),
+              ),
+            ] else ...[
+              Text(status, style: TextStyle(
+                color: status == 'Confirmed' ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+              )),
+            ],
           ],
         ),
       ),

@@ -1,23 +1,86 @@
+
 import 'package:flutter/material.dart';
 import 'package:petcare_app/clinic_dashboard/create_appointment.dart';
 import 'package:petcare_app/models/appointment.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:petcare_app/services/auth_service.dart';
+
+// ...existing code...
 
 class VetDashboard extends StatefulWidget {
-  const VetDashboard({super.key});
+  const VetDashboard({Key? key}) : super(key: key);
 
   @override
-  State<VetDashboard> createState() => _VetDashboardState();
+  _VetDashboardState createState() => _VetDashboardState();
 }
+// ...existing code...
+
 
 class _VetDashboardState extends State<VetDashboard> {
-  late List<Appointment> appointments = [];
+  final AuthService _authService = AuthService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Appointment> appointments = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchConfirmedAppointments();
+  }
+
+  Future<void> _fetchConfirmedAppointments() async {
+    final uid = _authService.currentUserId;
+    if (uid == null) return;
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+    final snapshot = await _firestore
+        .collection('appointments')
+        .where('clinicId', isEqualTo: uid)
+        .where('status', isEqualTo: 'Confirmed')
+        .get();
+    final appts = snapshot.docs.map((doc) {
+      final data = doc.data();
+      final dateTime = data['dateTime'] is Timestamp
+          ? (data['dateTime'] as Timestamp).toDate()
+          : (data['dateTime'] as DateTime);
+      final timeOfDay = TimeOfDay.fromDateTime(dateTime);
+      return Appointment(
+        id: doc.id,
+        petName: data['pet'] ?? '-',
+        ownerName: data['ownerName'] ?? '-',
+        phone: data['phone'] ?? '-',
+        type: data['type'] ?? '-',
+        date: dateTime,
+        time: timeOfDay,
+        reason: data['notes'] ?? '-',
+        status: data['status'] ?? 'Confirmed',
+      );
+    }).toList();
+    setState(() {
+      appointments = appts;
+      _isLoading = false;
+    });
+  }
+
+  void _addAppointment(Appointment appointment) {
+    setState(() => appointments.add(appointment));
+  }
 
   @override
   Widget build(BuildContext context) {
-    final todayAppointments = appointments.where((a) => a.isToday()).toList()..sort((a, b) => a.time.hour.compareTo(b.time.hour));
+    final now = DateTime.now();
+    final todayAppointments = appointments.where((a) =>
+      a.date.year == now.year && a.date.month == now.month && a.date.day == now.day
+    ).toList()..sort((a, b) => a.time.hour.compareTo(b.time.hour));
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+    final thisWeekAppointments = appointments.where((a) =>
+      a.date.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+      a.date.isBefore(endOfWeek.add(const Duration(days: 1)))
+    ).toList();
     final totalAppointments = appointments.length;
-    final urgentCount = appointments.where((a) => a.status == 'Urgent').length;
-    final confirmedCount = appointments.where((a) => a.status == 'Confirmed').length;
+    final confirmedCount = appointments.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFF7FF),
@@ -76,7 +139,7 @@ class _VetDashboardState extends State<VetDashboard> {
                       icon: Icons.calendar_today,
                       number: todayAppointments.length.toString(),
                       label: "Today's Appointments",
-                      trend: '+${confirmedCount > 0 ? confirmedCount : 0} confirmed',
+                      trend: '+${todayAppointments.length} today',
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -84,9 +147,9 @@ class _VetDashboardState extends State<VetDashboard> {
                     child: _StatCard(
                       color: Colors.green,
                       icon: Icons.people,
-                      number: totalAppointments.toString(),
-                      label: 'Total Appointments',
-                      trend: '+${confirmedCount} this week',
+                      number: thisWeekAppointments.length.toString(),
+                      label: 'This Week',
+                      trend: '+${thisWeekAppointments.length} this week',
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -94,9 +157,9 @@ class _VetDashboardState extends State<VetDashboard> {
                     child: _StatCard(
                       color: Colors.amber,
                       icon: Icons.description,
-                      number: urgentCount.toString(),
-                      label: 'Urgent Cases',
-                      trend: '${urgentCount} pending attention',
+                      number: totalAppointments.toString(),
+                      label: 'Total Confirmed',
+                      trend: '${totalAppointments} confirmed',
                     ),
                   ),
                 ],
@@ -128,15 +191,20 @@ class _VetDashboardState extends State<VetDashboard> {
                           ),
                           const SizedBox(height: 8),
                           Expanded(
-                            child: ListView.builder(
-                              itemCount: todayAppointments.isEmpty ? 1 : todayAppointments.length,
-                              itemBuilder: (_, i) => todayAppointments.isEmpty
-                                  ? const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('No appointments today')))
-                                  : _AppointmentTileWithDelete(
-                                      appointment: todayAppointments[i],
-                                      onDelete: () => setState(() => appointments.removeWhere((a) => a.id == todayAppointments[i].id)),
-                                    ),
-                            ),
+                            child: _isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : ListView.builder(
+                                  itemCount: todayAppointments.isEmpty ? 1 : todayAppointments.length,
+                                  itemBuilder: (_, i) => todayAppointments.isEmpty
+                                      ? const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('No appointments today')))
+                                      : _AppointmentTileWithDelete(
+                                          appointment: todayAppointments[i],
+                                          onDelete: () async {
+                                            // Optionally implement delete from Firestore
+                                            setState(() => appointments.removeWhere((a) => a.id == todayAppointments[i].id));
+                                          },
+                                        ),
+                                ),
                           ),
                         ],
                       ),
@@ -188,10 +256,6 @@ class _VetDashboardState extends State<VetDashboard> {
         ),
       ),
     );
-  }
-
-  void _addAppointment(Appointment appointment) {
-    setState(() => appointments.add(appointment));
   }
 }
 
