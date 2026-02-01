@@ -10,7 +10,7 @@ class ReminderScreen extends StatefulWidget {
 
 class _ReminderScreenState extends State<ReminderScreen> {
   // Dummy data to simulate your "Pets"
-  final List<String> myPets = ['Fufu', 'Bubu', 'Oyen']; 
+  final List<String> myPets = ['Fufu', 'Bubu', 'Oyen'];
 
   // Initial Dummy Data so the screen isn't empty
   final List<Map<String, dynamic>> reminders = [
@@ -24,10 +24,14 @@ class _ReminderScreenState extends State<ReminderScreen> {
   // UPDATED: Now uses the "images/" path as requested
   String _getPetImage(String petName) {
     switch (petName) {
-      case 'Fufu': return 'images/logo.png'; 
-      case 'Bubu': return 'images/logo.png'; 
-      case 'Oyen': return 'images/logo.png';
-      default: return 'images/logo.png'; // Ensure you have a default
+      case 'Fufu':
+        return 'images/logo.png';
+      case 'Bubu':
+        return 'images/logo.png';
+      case 'Oyen':
+        return 'images/logo.png';
+      default:
+        return 'images/logo.png'; // Ensure you have a default
     }
   }
 
@@ -36,17 +40,26 @@ class _ReminderScreenState extends State<ReminderScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF7FF), // Light blue background
       appBar: AppBar(
-        title: const Text('Reminders', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28, color: Colors.black)),
+        title: const Text(
+          'Reminders',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 28,
+            color: Colors.black,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
       ),
       body: Stack(
         children: [
           // List of Reminders
           Padding(
-            padding: const EdgeInsets.only(bottom: 120), // Leave space for the bottom button
+            padding: const EdgeInsets.only(
+              bottom: 120,
+            ), // Leave space for the bottom button
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               itemCount: reminders.length,
@@ -55,27 +68,54 @@ class _ReminderScreenState extends State<ReminderScreen> {
               },
             ),
           ),
-          
-          // "Clear all reminders" Text
+
+          // "Clear all reminders" Button
           Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    reminders.clear();
-                  });
-                },
-                child: const Text(
-                  "Clear all reminders", 
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black)
-                ),
+            bottom: 100,
+            right: 20,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Clear All Reminders?'),
+                    content: const Text(
+                      'Are you sure you want to delete all reminders?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            reminders.clear();
+                          });
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('All reminders cleared'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Text(
+                'Clear all reminders',
+                style: TextStyle(fontSize: 16, color: Colors.red),
               ),
             ),
           ),
-          
+
           // The Floating Add Button (Cyan +)
           Positioned(
             bottom: 80,
@@ -114,7 +154,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
             color: Colors.black.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Stack(
@@ -131,8 +171,11 @@ class _ReminderScreenState extends State<ReminderScreen> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    reminder['pet'].toUpperCase(), 
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)
+                    reminder['pet'].toUpperCase(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -164,8 +207,8 @@ class _ReminderScreenState extends State<ReminderScreen> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF222222), 
-                  shape: BoxShape.circle
+                  color: Color(0xFF222222),
+                  shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.close, color: Colors.white, size: 14),
               ),
@@ -200,8 +243,12 @@ class _ReminderScreenState extends State<ReminderScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return Dialog(
-              backgroundColor: const Color(0xFFFCEFE7), // Match the beige card color
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              backgroundColor: const Color(
+                0xFFFCEFE7,
+              ), // Match the beige card color
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               insetPadding: const EdgeInsets.symmetric(horizontal: 20),
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -214,54 +261,103 @@ class _ReminderScreenState extends State<ReminderScreen> {
                       child: GestureDetector(
                         onTap: () => Navigator.pop(context),
                         child: const CircleAvatar(
-                          radius: 14, 
-                          backgroundColor: Color(0xFF222222), 
-                          child: Icon(Icons.close, size: 16, color: Colors.white)
+                          radius: 14,
+                          backgroundColor: Color(0xFF222222),
+                          child: Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                    
+
                     const Text(
-                      "Create a new Reminder", 
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)
+                      "Create a new Reminder",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
                     ),
                     const SizedBox(height: 25),
 
                     // Form Fields
-                    _buildDialogRow("Choose pet :", 
-                      _buildDropdown(selectedPet, myPets, "Choose pet...", (val) => setDialogState(() => selectedPet = val))
+                    _buildDialogRow(
+                      "Choose pet :",
+                      _buildDropdown(
+                        selectedPet,
+                        myPets,
+                        "Choose pet...",
+                        (val) => setDialogState(() => selectedPet = val),
+                      ),
                     ),
-                    _buildDialogRow("Choose Type :", 
-                      _buildDropdown(selectedType, ["Feeding", "Medication", "Grooming"], "Choose type...", (val) => setDialogState(() => selectedType = val))
+                    _buildDialogRow(
+                      "Choose Type :",
+                      _buildDropdown(
+                        selectedType,
+                        ["Feeding", "Medication", "Grooming"],
+                        "Choose type...",
+                        (val) => setDialogState(() => selectedType = val),
+                      ),
                     ),
-                    _buildDialogRow("Time :", 
+                    _buildDialogRow(
+                      "Time :",
                       GestureDetector(
                         onTap: () async {
-                          final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                          if (time != null) setDialogState(() => selectedTime = time);
+                          final time = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (time != null)
+                            setDialogState(() => selectedTime = time);
                         },
                         child: _buildInputBox(
                           child: Text(
-                            selectedTime == null ? "e.g : 12.00 A.M" : selectedTime!.format(context),
-                            style: TextStyle(color: selectedTime == null ? Colors.grey[600] : Colors.black, fontSize: 13),
-                          )
+                            selectedTime == null
+                                ? "e.g : 12.00 A.M"
+                                : selectedTime!.format(context),
+                            style: TextStyle(
+                              color: selectedTime == null
+                                  ? Colors.grey[600]
+                                  : Colors.black,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
-                      )
+                      ),
                     ),
-                    _buildDialogRow("Remind me :", 
-                       _buildDropdown(selectedRemindMe, ["10 mins before", "30 mins before", "1 hour before"], "Choose time...", (val) => setDialogState(() => selectedRemindMe = val))
+                    _buildDialogRow(
+                      "Remind me :",
+                      _buildDropdown(
+                        selectedRemindMe,
+                        ["10 mins before", "30 mins before", "1 hour before"],
+                        "Choose time...",
+                        (val) => setDialogState(() => selectedRemindMe = val),
+                      ),
                     ),
-                    _buildDialogRow("Repeat :", 
-                       _buildDropdown(selectedRepeat, ["Everyday", "Never", "Weekends"], "Choose day...", (val) => setDialogState(() => selectedRepeat = val))
+                    _buildDialogRow(
+                      "Repeat :",
+                      _buildDropdown(
+                        selectedRepeat,
+                        ["Everyday", "Never", "Weekends"],
+                        "Choose day...",
+                        (val) => setDialogState(() => selectedRepeat = val),
+                      ),
                     ),
 
                     const SizedBox(height: 25),
-                    
+
                     // Green Check Button
                     GestureDetector(
                       onTap: () {
-                        if (selectedPet != null && selectedType != null && selectedTime != null) {
-                          _addReminder(selectedPet!, selectedType!, selectedTime!);
+                        if (selectedPet != null &&
+                            selectedType != null &&
+                            selectedTime != null) {
+                          _addReminder(
+                            selectedPet!,
+                            selectedType!,
+                            selectedTime!,
+                          );
                           Navigator.pop(context);
                         }
                       },
@@ -270,7 +366,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                         backgroundColor: Color(0xFF6CC57C), // Green
                         child: Icon(Icons.check, color: Colors.white, size: 30),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -284,8 +380,14 @@ class _ReminderScreenState extends State<ReminderScreen> {
   // --- LOGIC: Add Reminder ---
   void _addReminder(String pet, String type, TimeOfDay time) {
     final now = DateTime.now();
-    var scheduledDate = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    
+    var scheduledDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
@@ -310,7 +412,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
   }
 
   // --- HELPERS: Dialog Widgets ---
-  
+
   // Row for "Label : Input"
   Widget _buildDialogRow(String label, Widget input) {
     return Padding(
@@ -318,7 +420,10 @@ class _ReminderScreenState extends State<ReminderScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           SizedBox(
             width: 160, // Fixed width for alignment
             height: 35,
@@ -344,14 +449,26 @@ class _ReminderScreenState extends State<ReminderScreen> {
   }
 
   // Custom Dropdown
-  Widget _buildDropdown(String? value, List<String> items, String hint, Function(String?) onChanged) {
+  Widget _buildDropdown(
+    String? value,
+    List<String> items,
+    String hint,
+    Function(String?) onChanged,
+  ) {
     return _buildInputBox(
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey),
-          hint: Text(hint, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            size: 18,
+            color: Colors.grey,
+          ),
+          hint: Text(
+            hint,
+            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+          ),
           items: items.map((String val) {
             return DropdownMenuItem<String>(
               value: val,
