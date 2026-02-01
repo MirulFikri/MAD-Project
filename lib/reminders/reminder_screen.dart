@@ -34,7 +34,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D9D9), // Light Grey background
+      backgroundColor: const Color(0xFFEFF7FF), // Light blue background
       appBar: AppBar(
         title: const Text('Reminders', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28, color: Colors.black)),
         centerTitle: true,

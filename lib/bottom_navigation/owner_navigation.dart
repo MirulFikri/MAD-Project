@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:petcare_app/profile_creen/owner_profile.dart';
-import 'package:petcare_app/profile_creen/pet_profile.dart';
+import 'package:petcare_app/profile_screen/owner_profile.dart';
+import 'package:petcare_app/profile_screen/pet_profile.dart';
 import 'package:petcare_app/reminders/reminder_screen.dart';
 import 'package:petcare_app/vet_finder/find_clinics_screen.dart';
 
@@ -70,7 +70,7 @@ class OwnerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFEFF7FF),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
