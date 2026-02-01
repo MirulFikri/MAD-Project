@@ -68,7 +68,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                             ),
                           ),
                           TextSpan(
-                            text: '!',
+                            text: ' !',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,

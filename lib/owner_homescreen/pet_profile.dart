@@ -59,11 +59,11 @@ class _PetProfileState extends State<PetProfile> {
           .get();
 
       final records = recordsSnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
+          .map((doc) => doc.data())
           .toList();
 
       setState(() {
-        _selectedPetData = petDoc.data() as Map<String, dynamic>?;
+        _selectedPetData = petDoc.data();
         _healthRecords = records;
       });
     } catch (e) {
