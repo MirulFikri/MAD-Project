@@ -84,75 +84,95 @@ class ClinicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+    return InkWell(
+      onTap: () {},
+      borderRadius: BorderRadius.circular(14),
+      child: Card(
+        color: const Color.fromARGB(255, 202, 204, 207),
+        elevation: 4,
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.blue.shade50,
+                    child: Icon(Icons.local_hospital, color: Colors.blue[700]),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          location,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                Text(distance, style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text('Location: $location'),
-            Text('Contact: $contact'),
-            Text('Hours: $hours'),
-            const SizedBox(height: 8),
-
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: services
-                  .map(
-                    (service) => Chip(
-                      label: Text(service),
-                      backgroundColor: Colors.blue.shade50,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
                     ),
-                  )
-                  .toList(),
-            ),
-
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.directions),
-                    label: const Text('Directions'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey.shade300,
-                      foregroundColor: Colors.black,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(distance, style: const TextStyle(fontSize: 12)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.phone, size: 14, color: Colors.grey[700]),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      contact,
+                      style: TextStyle(color: Colors.grey[800]),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.call),
-                    label: const Text('Call'),
+                  Text(
+                    hours,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: services
+                    .map(
+                      (service) => Chip(
+                        label: Text(service),
+                        backgroundColor: Colors.blue.shade50,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
