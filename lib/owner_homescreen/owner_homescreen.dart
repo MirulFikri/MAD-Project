@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_app/owner_homescreen/add_pet.dart';
-import 'package:petcare_app/profile_screen/pet_profile.dart';
+import 'package:petcare_app/owner_homescreen/pet_profile.dart';
 import 'package:petcare_app/services/auth_service.dart';
 
 // Placeholder screens - create these files later
