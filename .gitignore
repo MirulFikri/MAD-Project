@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# firebase md files
+FIRESTORE_RULES_SETUP.md
+FIREBASE_AUTH_GUIDE.md

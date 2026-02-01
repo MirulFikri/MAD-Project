@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 class OwnerProfile extends StatelessWidget {
   const OwnerProfile({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authService = AuthService();
+
     return Scaffold(
       backgroundColor: const Color(0xFFEFF7FF),
 
@@ -15,94 +18,111 @@ class OwnerProfile extends StatelessWidget {
       ),
 
       // ✅ SCROLLABLE
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // ===== PROFILE HEADER =====
-            _buildProfileHeader(),
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: authService.currentUserId != null 
+            ? authService.getUserData(authService.currentUserId!) 
+            : Future.value(null),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            const SizedBox(height: 24),
+          final profile = snapshot.data ?? {};
+          final user = authService.currentUser;
+          final name = (profile['name'] as String?) ?? user?.displayName ?? 'Pet Owner';
+          final email = (profile['email'] as String?) ?? user?.email ?? '—';
+          final phone = (profile['phone'] as String?) ?? '—';
 
-            // ===== ACCOUNT INFO =====
-            _buildInfoCard(
-              title: 'Account Information',
-              children: const [
-                _InfoRow(
-                  icon: Icons.person_outline,
-                  label: 'Name',
-                  value: 'John Doe',
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // ===== PROFILE HEADER =====
+                _buildProfileHeader(name: name),
+
+                const SizedBox(height: 24),
+
+                // ===== ACCOUNT INFO =====
+                _buildInfoCard(
+                  title: 'Account Information',
+                  children: [
+                    _InfoRow(
+                      icon: Icons.person_outline,
+                      label: 'Name',
+                      value: name,
+                    ),
+                    _InfoRow(
+                      icon: Icons.email_outlined,
+                      label: 'Email',
+                      value: email,
+                    ),
+                    _InfoRow(
+                      icon: Icons.phone_outlined,
+                      label: 'Phone',
+                      value: phone,
+                    ),
+                  ],
                 ),
-                _InfoRow(
-                  icon: Icons.email_outlined,
-                  label: 'Email',
-                  value: 'johndoe@email.com',
+
+                const SizedBox(height: 16),
+
+                // ===== PET INFO =====
+                _buildInfoCard(
+                  title: 'My Pets',
+                  children: const [
+                    _InfoRow(icon: Icons.pets, label: 'Pet Name', value: 'Buddy'),
+                    _InfoRow(
+                      icon: Icons.category_outlined,
+                      label: 'Type',
+                      value: 'Dog',
+                    ),
+                    _InfoRow(
+                      icon: Icons.cake_outlined,
+                      label: 'Age',
+                      value: '3 years',
+                    ),
+                  ],
                 ),
-                _InfoRow(
-                  icon: Icons.phone_outlined,
-                  label: 'Phone',
-                  value: '012-345 6789',
+
+                const SizedBox(height: 24),
+
+                // ===== ACTION BUTTONS =====
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: Navigate to edit profile
+                  },
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Edit Profile'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Logout Button
+                OutlinedButton.icon(
+                  onPressed: () {
+                    _showLogoutDialog(context, authService);
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Log Out'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    foregroundColor: Colors.red,
+                  ),
                 ),
               ],
             ),
-
-            const SizedBox(height: 16),
-
-            // ===== PET INFO =====
-            _buildInfoCard(
-              title: 'My Pets',
-              children: const [
-                _InfoRow(icon: Icons.pets, label: 'Pet Name', value: 'Buddy'),
-                _InfoRow(
-                  icon: Icons.category_outlined,
-                  label: 'Type',
-                  value: 'Dog',
-                ),
-                _InfoRow(
-                  icon: Icons.cake_outlined,
-                  label: 'Age',
-                  value: '3 years',
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // ===== ACTION BUTTONS =====
-            ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Navigate to edit profile
-              },
-              icon: const Icon(Icons.edit),
-              label: const Text('Edit Profile'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Logout Button
-            OutlinedButton.icon(
-              onPressed: () {
-                _showLogoutDialog(context);
-              },
-              icon: const Icon(Icons.logout),
-              label: const Text('Log Out'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                foregroundColor: Colors.red,
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
   // ================= WIDGETS =================
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader({required String name}) {
     return Column(
       children: [
         CircleAvatar(
@@ -111,9 +131,9 @@ class OwnerProfile extends StatelessWidget {
           child: const Icon(Icons.person, size: 50, color: Colors.blue),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'John Doe',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Text(
+          name,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text('Pet Owner', style: TextStyle(color: Colors.grey.shade600)),
@@ -145,7 +165,7 @@ class OwnerProfile extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context, AuthService authService) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -157,13 +177,20 @@ class OwnerProfile extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
-              );
+              try {
+                await authService.signOut();
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login',
+                  (route) => false,
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error signing out: $e')),
+                );
+              }
             },
             child: const Text('Log Out', style: TextStyle(color: Colors.red)),
           ),

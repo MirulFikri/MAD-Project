@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to read and write their own owner profile
+    match /owners/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow authenticated users to read and write their own clinic profile
+    match /clinics/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow authenticated users to access appointments
+    match /appointments/{appointmentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to access medical records
+    match /medicalRecords/{recordId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow owners to access their pets
+    match /pets/{petId} {
+      allow read, write: if request.auth != null && 
+                          resource.data.ownerId == request.auth.uid;
+    }
+  }
+}
