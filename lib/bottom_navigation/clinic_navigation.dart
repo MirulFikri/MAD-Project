@@ -62,6 +62,3 @@ class _ClinicNavigationState extends State<ClinicNavigation> {
     );
   }
 }
-
-// Placeholder screens - create these files later
-// The screens are implemented in lib/clinic_dashboard/*.dart
