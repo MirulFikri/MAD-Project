@@ -1,7 +1,62 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
-class FindClinicsScreen extends StatelessWidget {
+class FindClinicsScreen extends StatefulWidget {
   const FindClinicsScreen({super.key});
+
+  @override
+  State<FindClinicsScreen> createState() => _FindClinicsScreenState();
+}
+
+class _FindClinicsScreenState extends State<FindClinicsScreen> {
+  final AuthService _authService = AuthService();
+  final TextEditingController _searchCtrl = TextEditingController();
+  List<Map<String, dynamic>> _allClinics = [];
+  List<Map<String, dynamic>> _filteredClinics = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClinics();
+    _searchCtrl.addListener(_filterClinics);
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadClinics() async {
+    try {
+      final clinics = await _authService.getAllClinics();
+      setState(() {
+        _allClinics = clinics;
+        _filteredClinics = clinics;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load clinics: $e')));
+      }
+    }
+  }
+
+  void _filterClinics() {
+    final query = _searchCtrl.text.toLowerCase();
+    setState(() {
+      _filteredClinics = _allClinics.where((clinic) {
+        final clinicName = ((clinic['clinicName'] as String?) ?? '')
+            .toLowerCase();
+        final address = ((clinic['address'] as String?) ?? '').toLowerCase();
+        return clinicName.contains(query) || address.contains(query);
+      }).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,52 +67,53 @@ class FindClinicsScreen extends StatelessWidget {
         centerTitle: true,
       ),
       backgroundColor: const Color(0xFFEFF7FF),
-
-      // ✅ SCROLLABLE PAGE
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search clinics...',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.grey.shade200,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(12),
+              children: [
+                TextField(
+                  controller: _searchCtrl,
+                  decoration: InputDecoration(
+                    hintText: 'Search clinics by name or location...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.grey.shade200,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (_filteredClinics.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Center(
+                      child: Text(
+                        _searchCtrl.text.isEmpty
+                            ? 'No clinics available'
+                            : 'No clinics found',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
+                  )
+                else
+                  ..._filteredClinics.map((clinic) {
+                    final services =
+                        (clinic['services'] as List<dynamic>?) ?? [];
+                    return ClinicCard(
+                      uid: clinic['uid'] ?? '',
+                      name: clinic['clinicName'] ?? 'Unknown Clinic',
+                      distance: 'N/A',
+                      location: clinic['address'] ?? 'No address',
+                      contact: clinic['phone'] ?? 'N/A',
+                      hours: clinic['hours'] ?? 'Hours not specified',
+                      services: services.cast<String>(),
+                    );
+                  }).toList(),
+              ],
             ),
-          ),
-
-          const SizedBox(height: 12),
-
-          const ClinicCard(
-            name: 'Paws & Claws Clinic',
-            distance: '2.6 km',
-            location: '123 Main Street, Downtown',
-            contact: '012-345 6789',
-            hours: 'Mon–Fri: 8AM – 6PM',
-            services: ['Surgery', 'Emergency', 'Dental'],
-          ),
-          const ClinicCard(
-            name: 'Happy Tails Hospital',
-            distance: '3.6 km',
-            location: '456 Oak Avenue, Midtown',
-            contact: '013-987 6543',
-            hours: 'Mon–Sun: 9AM – 9PM',
-            services: ['Surgery', 'Grooming'],
-          ),
-          const ClinicCard(
-            name: 'Pet Wellness Center',
-            distance: '5.2 km',
-            location: '789 Pine Road, Uptown',
-            contact: '011-222 3333',
-            hours: 'Mon–Fri: 9AM – 5PM',
-            services: ['Check-up', 'Dental Care'],
-          ),
-        ],
-      ),
     );
   }
 }
@@ -65,6 +121,7 @@ class FindClinicsScreen extends StatelessWidget {
 // ---------------- CLINIC CARD ----------------
 
 class ClinicCard extends StatelessWidget {
+  final String uid;
   final String name;
   final String distance;
   final String location;
@@ -74,6 +131,7 @@ class ClinicCard extends StatelessWidget {
 
   const ClinicCard({
     super.key,
+    required this.uid,
     required this.name,
     required this.distance,
     required this.location,
@@ -88,8 +146,8 @@ class ClinicCard extends StatelessWidget {
       onTap: () {},
       borderRadius: BorderRadius.circular(14),
       child: Card(
-        color: const Color.fromARGB(255, 202, 204, 207),
-        elevation: 4,
+        color: Colors.white,
+        elevation: 2,
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Padding(
@@ -158,19 +216,19 @@ class ClinicCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: services
-                    .map(
-                      (service) => Chip(
-                        label: Text(service),
-                        backgroundColor: Colors.blue.shade50,
-                      ),
-                    )
-                    .toList(),
-              ),
+              if (services.isNotEmpty)
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: services
+                      .map(
+                        (service) => Chip(
+                          label: Text(service),
+                          backgroundColor: Colors.blue.shade50,
+                        ),
+                      )
+                      .toList(),
+                ),
             ],
           ),
         ),

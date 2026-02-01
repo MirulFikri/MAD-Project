@@ -19,6 +19,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
+  Set<String> _selectedServices = {};
   final authService = AuthService();
 
   @override
@@ -225,6 +226,40 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
+                        'Services',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: commonVetServices.map((service) {
+                          final isSelected = _selectedServices.contains(
+                            service,
+                          );
+                          return FilterChip(
+                            label: Text(service),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedServices.add(service);
+                                } else {
+                                  _selectedServices.remove(service);
+                                }
+                              });
+                            },
+                            backgroundColor: Colors.grey.shade100,
+                            selectedColor: Colors.blue.shade200,
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
                         'Password',
                         style: TextStyle(
                           fontSize: 14,
@@ -362,6 +397,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                                     clinicName: clinicName,
                                     phone: phone,
                                     address: address,
+                                    services: _selectedServices.toList(),
                                   );
 
                                   setState(() => _isLoading = false);

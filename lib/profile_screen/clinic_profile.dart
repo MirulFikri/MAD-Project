@@ -55,6 +55,8 @@ class _ClinicProfileState extends State<ClinicProfile> {
           final phone = (profile['phone'] as String?) ?? '—';
           final location = (profile['address'] as String?) ?? '—';
           final hours = (profile['hours'] as String?) ?? '—';
+          final services = (profile['services'] as List<dynamic>?) ?? [];
+          final servicesList = services.cast<String>();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -144,6 +146,68 @@ class _ClinicProfileState extends State<ClinicProfile> {
                     ],
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // --- SERVICES SECTION ---
+                if (servicesList.isNotEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Services Offered",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: servicesList.map((service) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[100],
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.blue[300]!,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                service,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
 
                 const SizedBox(height: 20),
 

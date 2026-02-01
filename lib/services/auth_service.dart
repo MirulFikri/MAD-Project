@@ -1,6 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Common vet clinic services
+const List<String> commonVetServices = [
+  'General Checkup',
+  'Vaccinations',
+  'Dental Care',
+  'Surgery',
+  'Emergency Care',
+  'X-Ray',
+  'Ultrasound',
+  'Blood Tests',
+  'Grooming',
+  'Neutering/Spaying',
+  'Dermatology',
+  'Orthopedics',
+];
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -66,6 +82,7 @@ class AuthService {
     required String clinicName,
     required String phone,
     required String address,
+    List<String>? services,
   }) async {
     try {
       // Create user in Firebase Auth
@@ -79,6 +96,7 @@ class AuthService {
         'clinicName': clinicName,
         'phone': phone,
         'address': address,
+        'services': services ?? [],
         'userType': 'clinic',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -299,6 +317,17 @@ class AuthService {
         'success': false,
         'error': 'An unexpected error occurred. Please try again.',
       };
+    }
+  }
+
+  // Get all clinics
+  Future<List<Map<String, dynamic>>> getAllClinics() async {
+    try {
+      final snapshot = await _firestore.collection('clinics').get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      print('DEBUG: Error getting clinics: $e');
+      return [];
     }
   }
 

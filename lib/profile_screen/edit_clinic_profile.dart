@@ -14,6 +14,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
   final _addressCtrl = TextEditingController();
   final _hoursCtrl = TextEditingController();
   final AuthService _authService = AuthService();
+  Set<String> _selectedServices = {};
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -165,6 +166,40 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                       ),
 
                       const SizedBox(height: 20),
+                      const Text(
+                        'Services',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: commonVetServices.map((service) {
+                          final isSelected = _selectedServices.contains(
+                            service,
+                          );
+                          return FilterChip(
+                            label: Text(service),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedServices.add(service);
+                                } else {
+                                  _selectedServices.remove(service);
+                                }
+                              });
+                            },
+                            backgroundColor: Colors.grey.shade100,
+                            selectedColor: Colors.blue.shade200,
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 20),
                       Row(
                         children: [
                           Expanded(
@@ -235,6 +270,8 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
       _phoneCtrl.text = (data['phone'] as String?) ?? '';
       _addressCtrl.text = (data['address'] as String?) ?? '';
       _hoursCtrl.text = (data['hours'] as String?) ?? '';
+      final services = data['services'] as List<dynamic>?;
+      _selectedServices = (services ?? []).cast<String>().toSet();
     }
 
     if (mounted) {
@@ -262,6 +299,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
         'phone': _phoneCtrl.text.trim(),
         'address': _addressCtrl.text.trim(),
         'hours': _hoursCtrl.text.trim(),
+        'services': _selectedServices.toList(),
       },
     );
 
