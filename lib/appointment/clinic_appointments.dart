@@ -51,16 +51,14 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Appointments'),
-        actions: [
-          TextButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text(
-              'New Appointment',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openCreateAppointment(context),
+        tooltip: 'New Appointment',
+        child: const Icon(Icons.add),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -308,6 +306,342 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       'December',
     ];
     return months[month - 1];
+  }
+
+  void _openCreateAppointment(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: _CreateAppointmentForm(
+          onCreate: (map) async {
+            final clinicId = _authService.currentUserId;
+            if (clinicId == null) return;
+
+            try {
+              // Save appointment to Firestore
+              await _firestore.collection('appointments').add({
+                'clinicId': clinicId,
+                'ownerId': map['ownerId'],
+                'petId': map['petId'],
+                'pet': map['petName'],
+                'type': map['type'],
+                'dateTime': map['dateTime'],
+                'notes': map['notes'],
+                'status': 'Confirmed',
+                'createdAt': FieldValue.serverTimestamp(),
+              });
+
+              // Add clinic to pet's treatingClinics array
+              await _firestore.collection('pets').doc(map['petId']).update({
+                'treatingClinics': FieldValue.arrayUnion([clinicId]),
+              });
+
+              await _loadAppointments();
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Appointment created successfully')),
+                );
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e')),
+                );
+              }
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _CreateAppointmentForm extends StatefulWidget {
+  final Function(Map<String, dynamic>) onCreate;
+  const _CreateAppointmentForm({required this.onCreate});
+
+  @override
+  State<_CreateAppointmentForm> createState() => _CreateAppointmentFormState();
+}
+
+class _CreateAppointmentFormState extends State<_CreateAppointmentForm> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _formKey = GlobalKey<FormState>();
+  
+  String? _selectedOwner;
+  String? _selectedPet;
+  String? _selectedType;
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  final TextEditingController _notesController = TextEditingController();
+
+  List<Map<String, dynamic>> _owners = [];
+  List<Map<String, dynamic>> _pets = [];
+  bool _loadingOwners = true;
+  bool _loadingPets = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOwners();
+  }
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadOwners() async {
+    try {
+      final snapshot = await _firestore.collection('owners').get();
+      setState(() {
+        _owners = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return {
+            'id': doc.id,
+            'name': data['fullName'] ?? data['name'] ?? 'Unknown',
+          };
+        }).toList();
+        _loadingOwners = false;
+      });
+    } catch (e) {
+      setState(() => _loadingOwners = false);
+    }
+  }
+
+  Future<void> _loadPetsForOwner(String ownerId) async {
+    setState(() {
+      _loadingPets = true;
+      _selectedPet = null;
+    });
+
+    try {
+      final snapshot = await _firestore
+          .collection('pets')
+          .where('ownerId', isEqualTo: ownerId)
+          .get();
+      
+      setState(() {
+        _pets = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return {
+            'id': doc.id,
+            'name': data['name'] ?? 'Unknown Pet',
+          };
+        }).toList();
+        _loadingPets = false;
+      });
+    } catch (e) {
+      setState(() {
+        _pets = [];
+        _loadingPets = false;
+      });
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date != null) {
+      setState(() => _selectedDate = date);
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (time != null) {
+      setState(() => _selectedTime = time);
+    }
+  }
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      if (_selectedOwner == null || _selectedPet == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select owner and pet')),
+        );
+        return;
+      }
+      if (_selectedDate == null || _selectedTime == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select date and time')),
+        );
+        return;
+      }
+
+      final dateTime = DateTime(
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
+      final petName = _pets.firstWhere(
+        (p) => p['id'] == _selectedPet,
+        orElse: () => {'name': 'Unknown'},
+      )['name'];
+
+      widget.onCreate({
+        'ownerId': _selectedOwner,
+        'petId': _selectedPet,
+        'petName': petName,
+        'type': _selectedType ?? 'Checkup',
+        'dateTime': Timestamp.fromDate(dateTime),
+        'notes': _notesController.text.trim(),
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Create Appointment',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              
+              // Owner dropdown
+              if (_loadingOwners)
+                const Center(child: CircularProgressIndicator())
+              else
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Select Owner',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                  value: _selectedOwner,
+                  items: _owners.map((owner) {
+                    return DropdownMenuItem(
+                      value: owner['id'] as String?,
+                      child: Text(owner['name'] as String? ?? 'Unknown'),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() => _selectedOwner = value);
+                    if (value != null) _loadPetsForOwner(value);
+                  },
+                  validator: (v) => v == null ? 'Select an owner' : null,
+                ),
+              const SizedBox(height: 16),
+
+              // Pet dropdown
+              if (_loadingPets)
+                const Center(child: CircularProgressIndicator())
+              else
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Select Pet',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.pets),
+                  ),
+                  value: _selectedPet,
+                  items: _pets.map((pet) {
+                    return DropdownMenuItem(
+                      value: pet['id'] as String?,
+                      child: Text(pet['name'] as String? ?? 'Unknown'),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedPet = value),
+                  validator: (v) => v == null ? 'Select a pet' : null,
+                ),
+              const SizedBox(height: 16),
+
+              // Type dropdown
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Appointment Type',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.medical_services),
+                ),
+                value: _selectedType,
+                items: ['Checkup', 'Vaccination', 'Surgery', 'Emergency', 'Grooming']
+                    .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedType = value),
+                validator: (v) => v == null ? 'Select a type' : null,
+              ),
+              const SizedBox(height: 16),
+
+              // Date picker
+              ListTile(
+                title: Text(
+                  _selectedDate == null
+                      ? 'Select Date'
+                      : '${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year}',
+                ),
+                leading: const Icon(Icons.calendar_today),
+                tileColor: Colors.grey[100],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  side: BorderSide(color: Colors.grey[300]!),
+                ),
+                onTap: _pickDate,
+              ),
+              const SizedBox(height: 16),
+
+              // Time picker
+              ListTile(
+                title: Text(
+                  _selectedTime == null
+                      ? 'Select Time'
+                      : _selectedTime!.format(context),
+                ),
+                leading: const Icon(Icons.access_time),
+                tileColor: Colors.grey[100],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  side: BorderSide(color: Colors.grey[300]!),
+                ),
+                onTap: _pickTime,
+              ),
+              const SizedBox(height: 16),
+
+              // Notes
+              TextFormField(
+                controller: _notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Notes (optional)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.note),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                ),
+                child: const Text('Create Appointment'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
