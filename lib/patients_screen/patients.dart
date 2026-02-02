@@ -219,21 +219,6 @@ class _PatientCard extends StatelessWidget {
                 'Breed: $displayBreed',
                 style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 3),
-              Text(
-                'Age: $displayAge years',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Height: $displayHeight cm',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Weight: $displayWeight kg',
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-              ),
               const SizedBox(height: 6),
               Text(
                 'Contact: $ownerPhone',
