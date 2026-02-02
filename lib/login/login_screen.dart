@@ -231,24 +231,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       return;
                                     }
 
-                                    // Development/testing credentials
-                                    if (email == 'owner@example.com' &&
-                                        password == 'password123') {
-                                      Navigator.pushReplacementNamed(
-                                        context,
-                                        '/owner_home',
-                                      );
-                                      return;
-                                    }
-                                    if (email == 'clinic@example.com' &&
-                                        password == 'password123') {
-                                      Navigator.pushReplacementNamed(
-                                        context,
-                                        '/clinic_home',
-                                      );
-                                      return;
-                                    }
-
                                     setState(() => _isLoading = true);
 
                                     final result = await _authService.signIn(
