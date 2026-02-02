@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:petcare_app/clinic_dashboard/create_appointment.dart';
 import 'package:petcare_app/models/appointment.dart';
@@ -14,7 +13,6 @@ class VetDashboard extends StatefulWidget {
   _VetDashboardState createState() => _VetDashboardState();
 }
 // ...existing code...
-
 
 class _VetDashboardState extends State<VetDashboard> {
   final AuthService _authService = AuthService();
@@ -33,6 +31,7 @@ class _VetDashboardState extends State<VetDashboard> {
     if (uid == null) return;
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    // ignore: unused_local_variable
     final endOfWeek = startOfWeek.add(const Duration(days: 6));
     final snapshot = await _firestore
         .collection('appointments')
@@ -70,15 +69,25 @@ class _VetDashboardState extends State<VetDashboard> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final todayAppointments = appointments.where((a) =>
-      a.date.year == now.year && a.date.month == now.month && a.date.day == now.day
-    ).toList()..sort((a, b) => a.time.hour.compareTo(b.time.hour));
+    final todayAppointments =
+        appointments
+            .where(
+              (a) =>
+                  a.date.year == now.year &&
+                  a.date.month == now.month &&
+                  a.date.day == now.day,
+            )
+            .toList()
+          ..sort((a, b) => a.time.hour.compareTo(b.time.hour));
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final endOfWeek = startOfWeek.add(const Duration(days: 6));
-    final thisWeekAppointments = appointments.where((a) =>
-      a.date.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-      a.date.isBefore(endOfWeek.add(const Duration(days: 1)))
-    ).toList();
+    final thisWeekAppointments = appointments
+        .where(
+          (a) =>
+              a.date.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+              a.date.isBefore(endOfWeek.add(const Duration(days: 1))),
+        )
+        .toList();
     final totalAppointments = appointments.length;
 
     return Scaffold(
@@ -98,9 +107,25 @@ class _VetDashboardState extends State<VetDashboard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Veterinary Dashboard', style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 18 : 20, fontWeight: FontWeight.w700)),
+                          Text(
+                            'Veterinary Dashboard',
+                            style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width < 400
+                                  ? 18
+                                  : 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text('Welcome back, Dr. Anderson', style: TextStyle(color: Colors.grey, fontSize: MediaQuery.of(context).size.width < 400 ? 11 : 13)),
+                          Text(
+                            'Welcome back',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: MediaQuery.of(context).size.width < 400
+                                  ? 11
+                                  : 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -109,17 +134,37 @@ class _VetDashboardState extends State<VetDashboard> {
                       children: [
                         IconButton(
                           onPressed: () {},
-                          icon: Icon(Icons.notifications_none, size: MediaQuery.of(context).size.width < 400 ? 22 : 24),
+                          icon: Icon(
+                            Icons.notifications_none,
+                            size: MediaQuery.of(context).size.width < 400
+                                ? 22
+                                : 24,
+                          ),
                         ),
                         Positioned(
                           right: 6,
                           top: 6,
                           child: Container(
                             padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                            constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
                             child: Center(
-                              child: Text('3', style: TextStyle(color: Colors.white, fontSize: MediaQuery.of(context).size.width < 400 ? 9 : 11)),
+                              child: Text(
+                                '3',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize:
+                                      MediaQuery.of(context).size.width < 400
+                                      ? 9
+                                      : 11,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -135,14 +180,17 @@ class _VetDashboardState extends State<VetDashboard> {
                   builder: (context, constraints) {
                     final double spacing = 12;
                     final double minCellWidth = 100;
-                    final int crossAxisCount = (constraints.maxWidth / (minCellWidth + spacing)).floor().clamp(1, 3);
+                    final int crossAxisCount =
+                        (constraints.maxWidth / (minCellWidth + spacing))
+                            .floor()
+                            .clamp(1, 3);
                     return GridView.count(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: spacing,
                       mainAxisSpacing: spacing,
-                      childAspectRatio: 0.85,
+                      childAspectRatio: 0.8,
                       children: [
                         _StatCard(
                           color: Colors.blue,
@@ -179,11 +227,38 @@ class _VetDashboardState extends State<VetDashboard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Today\'s Appointments', style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 14 : 16, fontWeight: FontWeight.w700)),
+                        Text(
+                          'Today\'s Appointments',
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width < 400
+                                ? 14
+                                : 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         ElevatedButton.icon(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CreateAppointmentPage(onAppointmentCreated: _addAppointment))).then((_) => setState(() {})),
-                          icon: Icon(Icons.add, size: MediaQuery.of(context).size.width < 400 ? 16 : 18),
-                          label: Text('New', style: TextStyle(fontSize: MediaQuery.of(context).size.width < 400 ? 12 : 14)),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CreateAppointmentPage(
+                                onAppointmentCreated: _addAppointment,
+                              ),
+                            ),
+                          ).then((_) => setState(() {})),
+                          icon: Icon(
+                            Icons.add,
+                            size: MediaQuery.of(context).size.width < 400
+                                ? 16
+                                : 18,
+                          ),
+                          label: Text(
+                            'New',
+                            style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width < 400
+                                  ? 12
+                                  : 14,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -191,18 +266,30 @@ class _VetDashboardState extends State<VetDashboard> {
                     SizedBox(
                       height: 300,
                       child: _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            itemCount: todayAppointments.isEmpty ? 1 : todayAppointments.length,
-                            itemBuilder: (_, i) => todayAppointments.isEmpty
-                                ? const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('No appointments today')))
-                                : _AppointmentTileWithDelete(
-                                    appointment: todayAppointments[i],
-                                    onDelete: () async {
-                                      setState(() => appointments.removeWhere((a) => a.id == todayAppointments[i].id));
-                                    },
-                                  ),
-                          ),
+                          ? const Center(child: CircularProgressIndicator())
+                          : ListView.builder(
+                              itemCount: todayAppointments.isEmpty
+                                  ? 1
+                                  : todayAppointments.length,
+                              itemBuilder: (_, i) => todayAppointments.isEmpty
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: Center(
+                                        child: Text('No appointments today'),
+                                      ),
+                                    )
+                                  : _AppointmentTileWithDelete(
+                                      appointment: todayAppointments[i],
+                                      onDelete: () async {
+                                        setState(
+                                          () => appointments.removeWhere(
+                                            (a) =>
+                                                a.id == todayAppointments[i].id,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                            ),
                     ),
                   ],
                 ),
@@ -221,41 +308,73 @@ class _StatCard extends StatelessWidget {
   final String number;
   final String label;
   final String trend;
-  const _StatCard({required this.color, required this.icon, required this.number, required this.label, required this.trend});
+  const _StatCard({
+    required this.color,
+    required this.icon,
+    required this.number,
+    required this.label,
+    required this.trend,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final double iconSize = MediaQuery.of(context).size.width < 400 ? 24 : 28;
-    final double numberFontSize = MediaQuery.of(context).size.width < 400 ? 16 : 18;
-    final double labelFontSize = MediaQuery.of(context).size.width < 400 ? 10 : 12;
+    final double iconSize = MediaQuery.of(context).size.width < 400 ? 22 : 26;
+    final double numberFontSize = MediaQuery.of(context).size.width < 400 ? 15 : 17;
+    final double labelFontSize = MediaQuery.of(context).size.width < 400 ? 8 : 10;
+    final double trendFontSize = MediaQuery.of(context).size.width < 400 ? 8 : 9;
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)]),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10),
+        ],
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: color, size: iconSize),
           ),
-          const SizedBox(height: 8),
-          Text(number, style: TextStyle(fontSize: numberFontSize, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey[700], fontSize: labelFontSize),
+            number,
+            style: TextStyle(
+              fontSize: numberFontSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 2),
-          Text(
-            trend,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey[600], fontSize: labelFontSize),
+          Flexible(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: labelFontSize,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Flexible(
+            child: Text(
+              trend,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: trendFontSize,
+              ),
+            ),
           ),
         ],
       ),
@@ -267,14 +386,17 @@ class _StatCard extends StatelessWidget {
 class _AppointmentTileWithDelete extends StatelessWidget {
   final Appointment appointment;
   final VoidCallback onDelete;
-  const _AppointmentTileWithDelete({required this.appointment, required this.onDelete});
+  const _AppointmentTileWithDelete({
+    required this.appointment,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     final double timeFontSize = MediaQuery.of(context).size.width < 400 ? 12 : 14;
     final double petNameFontSize = MediaQuery.of(context).size.width < 400 ? 13 : 15;
     final double statusFontSize = MediaQuery.of(context).size.width < 400 ? 10 : 12;
-    
+
     Color statusColor = Colors.grey;
     if (appointment.status == 'Confirmed') statusColor = Colors.green;
     if (appointment.status == 'Pending') statusColor = Colors.orange;
@@ -283,7 +405,13 @@ class _AppointmentTileWithDelete extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8)]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8),
+        ],
+      ),
       child: Row(
         children: [
           SizedBox(
@@ -291,12 +419,30 @@ class _AppointmentTileWithDelete extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(appointment.formatTime(), style: TextStyle(fontWeight: FontWeight.w700, fontSize: timeFontSize)),
+                Text(
+                  appointment.formatTime(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: timeFontSize,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                  decoration: BoxDecoration(color: statusColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                  child: Text(appointment.status, style: TextStyle(color: statusColor, fontSize: statusFontSize)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    appointment.status,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: statusFontSize,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -306,9 +452,21 @@ class _AppointmentTileWithDelete extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${appointment.petName} — ${appointment.type}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: petNameFontSize)),
+                Text(
+                  '${appointment.petName} — ${appointment.type}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: petNameFontSize,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(appointment.ownerName, style: TextStyle(color: Colors.grey[700], fontSize: petNameFontSize - 2)),
+                Text(
+                  appointment.ownerName,
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: petNameFontSize - 2,
+                  ),
+                ),
               ],
             ),
           ),
@@ -318,7 +476,10 @@ class _AppointmentTileWithDelete extends StatelessWidget {
             },
             itemBuilder: (_) => [
               const PopupMenuItem(value: 'edit', child: Text('Edit')),
-              const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
             ],
           ),
         ],
