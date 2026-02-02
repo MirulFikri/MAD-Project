@@ -122,47 +122,6 @@ class _VetDashboardState extends State<VetDashboard> {
                         ],
                       ),
                     ),
-                    // Notification bell with badge
-                    Stack(
-                      children: [
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.notifications_none,
-                            size: MediaQuery.of(context).size.width < 400
-                                ? 22
-                                : 24,
-                          ),
-                        ),
-                        Positioned(
-                          right: 6,
-                          top: 6,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 18,
-                              minHeight: 18,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '3',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize:
-                                      MediaQuery.of(context).size.width < 400
-                                      ? 9
-                                      : 11,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
 

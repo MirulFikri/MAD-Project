@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'package:petcare_app/profile_screen/edit_owner_profile.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OwnerProfile extends StatelessWidget {
   const OwnerProfile({super.key});
@@ -16,8 +17,6 @@ class OwnerProfile extends StatelessWidget {
         title: const Text('Profile'),
         centerTitle: true,
       ),
-
-      // ✅ SCROLLABLE
       body: FutureBuilder<Map<String, dynamic>?>(
         future: authService.currentUserId != null
             ? authService.getUserData(authService.currentUserId!)
@@ -35,181 +34,419 @@ class OwnerProfile extends StatelessWidget {
           final email = (profile['email'] as String?) ?? user?.email ?? '—';
           final phone = (profile['phone'] as String?) ?? '—';
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // ===== PROFILE HEADER =====
-                _buildProfileHeader(name: name),
+          return FutureBuilder<int>(
+            future: _getPetCount(authService.currentUserId ?? ''),
+            builder: (context, petSnapshot) {
+              final petCount = petSnapshot.data ?? 0;
 
-                const SizedBox(height: 24),
+              return FutureBuilder<String>(
+                future: _getNextReminder(authService.currentUserId ?? ''),
+                builder: (context, reminderSnapshot) {
+                  final nextReminder = reminderSnapshot.data ?? '—';
 
-                // ===== ACCOUNT INFO =====
-                _buildInfoCard(
-                  title: 'Account Information',
-                  children: [
-                    _InfoRow(
-                      icon: Icons.person_outline,
-                      label: 'Name',
-                      value: name,
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        _buildProfileHeader(name: name),
+                        const SizedBox(height: 24),
+
+                        _buildInfoCard(
+                          title: 'Account Information',
+                          children: [
+                            _InfoRow(
+                              icon: Icons.person_outline,
+                              label: 'Name',
+                              value: name,
+                            ),
+                            _InfoRow(
+                              icon: Icons.email_outlined,
+                              label: 'Email',
+                              value: email,
+                            ),
+                            _InfoRow(
+                              icon: Icons.phone_outlined,
+                              label: 'Phone',
+                              value: phone,
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        Card(
+                          color: Colors.white,
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Pet Summary',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                GridView.count(
+                                  crossAxisCount: 2,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  mainAxisSpacing: 8,
+                                  crossAxisSpacing: 8,
+                                  children: [
+                                    _buildSummaryCard(
+                                      emoji: '🐾',
+                                      title: 'Total pets',
+                                      value: '$petCount',
+                                    ),
+                                    _buildSummaryCard(
+                                      emoji: '⏰',
+                                      title: 'Next reminder',
+                                      value: nextReminder,
+                                    ),
+                                    _buildSummaryCard(
+                                      emoji: '🏥',
+                                      title: 'Last vet visit',
+                                      value:
+                                          (profile['lastVisit'] as String?) ??
+                                          '—',
+                                    ),
+                                    FutureBuilder<String>(
+                                      future: _getUpcomingAppointment(
+                                        authService.currentUserId ?? '',
+                                      ),
+                                      builder: (context, appointmentSnapshot) {
+                                        final appointment =
+                                            appointmentSnapshot.data ?? '—';
+                                        return _buildSummaryCard(
+                                          emoji: '📅',
+                                          title: 'Upcoming appointment',
+                                          value: appointment,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        FutureBuilder<String>(
+                          future: _getReminderDiagnostics(
+                            authService.currentUserId ?? '',
+                          ),
+                          builder: (context, diagSnap) {
+                            final diag = diagSnap.data ?? '';
+                            return Card(
+                              color: diag.isEmpty
+                                  ? Colors.white
+                                  : Colors.yellow.shade50,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: diag.isEmpty
+                                      ? Colors.transparent
+                                      : Colors.orange.shade200,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Diagnostics',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      diag.isEmpty
+                                          ? 'No diagnostic data (sign-in or network issue).'
+                                          : diag,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const EditOwnerProfile(),
+                            ),
+                          ),
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Edit Profile'),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(48),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              _showLogoutDialog(context, authService),
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Log Out'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(48),
+                            foregroundColor: Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
-                    _InfoRow(
-                      icon: Icons.email_outlined,
-                      label: 'Email',
-                      value: email,
-                    ),
-                    _InfoRow(
-                      icon: Icons.phone_outlined,
-                      label: 'Phone',
-                      value: phone,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // ===== PET SUMMARY =====
-                _buildInfoCard(
-                  title: 'Pet Summary',
-                  children: [
-                    _InfoRow(
-                      icon: Icons.pets,
-                      label: 'Total pets',
-                      value: '${profile['petsCount'] ?? '—'}',
-                    ),
-                    _InfoRow(
-                      icon: Icons.star_outline,
-                      label: 'Primary pet',
-                      value: (profile['primaryPetName'] as String?) ?? '—',
-                    ),
-                    _InfoRow(
-                      icon: Icons.event_outlined,
-                      label: 'Last visit',
-                      value: (profile['lastVisit'] as String?) ?? '—',
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // --- EDIT BUTTON ---
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const EditOwnerProfile(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Edit Profile'),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // --- LOGOUT BUTTON ---
-                OutlinedButton.icon(
-                  onPressed: () {
-                    _showLogoutDialog(context, authService);
-                  },
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Log Out'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    foregroundColor: Colors.red,
-                  ),
-                ),
-              ],
-            ),
+                  );
+                },
+              );
+            },
           );
         },
       ),
     );
   }
+}
 
-  // ================= WIDGETS =================
+// Helpers and Firestore queries
 
-  Widget _buildProfileHeader({required String name}) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 50,
-          backgroundColor: Colors.blue.shade100,
-          child: const Icon(Icons.person, size: 50, color: Colors.blue),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          name,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        Text('Pet Owner', style: TextStyle(color: Colors.grey.shade600)),
-      ],
-    );
+Future<int> _getPetCount(String ownerId) async {
+  if (ownerId.isEmpty) return 0;
+  try {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('pets')
+        .where('ownerId', isEqualTo: ownerId)
+        .get();
+    return querySnapshot.docs.length;
+  } catch (e) {
+    print('Error fetching pet count: $e');
+    return 0;
   }
+}
 
-  Widget _buildInfoCard({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Card(
-      color: Colors.white,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            ...children,
-          ],
-        ),
+Future<String> _getNextReminder(String ownerId) async {
+  if (ownerId.isEmpty) return '—';
+  try {
+    final remindersSnapshot = await FirebaseFirestore.instance
+        .collection('reminders')
+        .where('ownerId', isEqualTo: ownerId)
+        .orderBy('scheduledAt', descending: false)
+        .limit(1)
+        .get();
+    if (remindersSnapshot.docs.isNotEmpty) {
+      final reminderData = remindersSnapshot.docs.first.data();
+      final scheduledAt = reminderData['scheduledAt'] as Timestamp?;
+      if (scheduledAt != null) {
+        final date = scheduledAt.toDate();
+        return '${date.month}/${date.day}/${date.year}';
+      }
+    }
+    return '—';
+  } catch (e) {
+    print('Error fetching next reminder: $e');
+    return '—';
+  }
+}
+
+Future<String> _getUpcomingAppointment(String ownerId) async {
+  if (ownerId.isEmpty) return '—';
+  try {
+    final now = DateTime.now();
+    final appointmentsSnapshot = await FirebaseFirestore.instance
+        .collection('appointments')
+        .where('ownerId', isEqualTo: ownerId)
+        .orderBy('appointmentDate', descending: false)
+        .get();
+
+    for (final doc in appointmentsSnapshot.docs) {
+      final data = doc.data();
+      final appointmentDate = data['appointmentDate'];
+
+      DateTime? dateTime;
+      if (appointmentDate is Timestamp) {
+        dateTime = appointmentDate.toDate();
+      } else if (appointmentDate is String) {
+        try {
+          dateTime = DateTime.parse(appointmentDate);
+        } catch (_) {}
+      }
+
+      if (dateTime != null && dateTime.isAfter(now)) {
+        return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
+      }
+    }
+
+    return '—';
+  } catch (e) {
+    print('Error fetching upcoming appointment: $e');
+    return '—';
+  }
+}
+
+Future<String> _getReminderDiagnostics(String ownerId) async {
+  if (ownerId.isEmpty) return '';
+  try {
+    final topLevel = await FirebaseFirestore.instance
+        .collection('reminders')
+        .where('ownerId', isEqualTo: ownerId)
+        .get();
+    final topLevelCount = topLevel.docs.length;
+    String topSample = '';
+    if (topLevel.docs.isNotEmpty)
+      topSample = 'topKeys: ${topLevel.docs.first.data().keys.join(', ')}';
+
+    final petDocs = await FirebaseFirestore.instance
+        .collection('pets')
+        .where('ownerId', isEqualTo: ownerId)
+        .get();
+    final petCount = petDocs.docs.length;
+    int petSubReminders = 0;
+    String petSample = '';
+    for (final petDoc in petDocs.docs) {
+      final sub = await petDoc.reference.collection('reminders').get();
+      if (sub.docs.isNotEmpty && petSample.isEmpty)
+        petSample =
+            'pet(${petDoc.id})Keys: ${sub.docs.first.data().keys.join(', ')}';
+      petSubReminders += sub.docs.length;
+    }
+
+    return 'uid: $ownerId · reminders: $topLevelCount · $topSample · pets: $petCount · petSubReminders: $petSubReminders${petSample.isNotEmpty ? ' · $petSample' : ''}';
+  } catch (e) {
+    print('Error fetching reminder diagnostics: $e');
+    return '';
+  }
+}
+
+Widget _buildProfileHeader({required String name}) {
+  return Column(
+    children: [
+      CircleAvatar(
+        radius: 50,
+        backgroundColor: Colors.blue.shade100,
+        child: const Icon(Icons.person, size: 50, color: Colors.blue),
       ),
-    );
-  }
+      const SizedBox(height: 12),
+      Text(
+        name,
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 4),
+      Text('Pet Owner', style: TextStyle(color: Colors.grey.shade600)),
+    ],
+  );
+}
 
-  void _showLogoutDialog(BuildContext context, AuthService authService) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+Widget _buildInfoCard({required String title, required List<Widget> children}) {
+  return Card(
+    color: Colors.white,
+    elevation: 1,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await authService.signOut();
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/login',
-                  (route) => false,
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error signing out: $e')),
-                );
-              }
-            },
-            child: const Text('Log Out', style: TextStyle(color: Colors.red)),
-          ),
+          const SizedBox(height: 10),
+          ...children,
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+Widget _buildSummaryCard({
+  required String emoji,
+  required String title,
+  required String value,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.blue.shade50,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Colors.blue.shade100),
+    ),
+    padding: const EdgeInsets.all(10),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 28)),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue[700],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ),
+  );
+}
+
+void _showLogoutDialog(BuildContext context, AuthService authService) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Log Out'),
+      content: const Text('Are you sure you want to log out?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            try {
+              await authService.signOut();
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Error signing out: $e')));
+            }
+          },
+          child: const Text('Log Out', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
 }
 
 class _InfoRow extends StatelessWidget {
