@@ -476,7 +476,16 @@ class _ReminderScreenState extends State<ReminderScreen> {
                       "Remind me :",
                       _buildDropdown(
                         selectedRemindMe,
-                        ["10 mins before", "30 mins before"],
+                        [
+                          "2 mins before",
+                          "5 mins before",
+                          "10 mins before",
+                          "15 mins before",
+                          "20 mins before",
+                          "30 mins before",
+                          "1 hour before",
+                          "1 day before"
+                        ],
                         "Choose time...",
                         (val) => setDialogState(() => selectedRemindMe = val),
                       ),
@@ -546,8 +555,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
       time.minute,
     );
     final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final reminderOneDayBefore =
-        id + 1; // Unique ID for the 1-day-before reminder
+    final reminderBeforeId = id + 1; // Unique ID for the reminder-before notification
 
     // 1. Schedule Local Notification for the actual appointment
     NotificationService().scheduleNotification(
@@ -557,15 +565,42 @@ class _ReminderScreenState extends State<ReminderScreen> {
       scheduledTime: scheduledDate,
     );
 
-    // 2. Schedule Local Notification 1 day before
-    final oneDayBeforeDate = scheduledDate.subtract(const Duration(days: 1));
-    NotificationService().scheduleNotification(
-      id: reminderOneDayBefore,
-      title: 'PetCare Reminder',
-      body:
-          'Reminder: $pet has $type appointment tomorrow at ${time.format(context)} ‼️',
-      scheduledTime: oneDayBeforeDate,
-    );
+    // 2. Schedule notification based on "Remind me" selection
+    if (remindMe != null && remindMe.isNotEmpty) {
+      DateTime reminderTime;
+      
+      // Parse the remind me option and calculate the notification time
+      if (remindMe == "2 mins before") {
+        reminderTime = scheduledDate.subtract(const Duration(minutes: 2));
+      } else if (remindMe == "5 mins before") {
+        reminderTime = scheduledDate.subtract(const Duration(minutes: 5));
+      } else if (remindMe == "10 mins before") {
+        reminderTime = scheduledDate.subtract(const Duration(minutes: 10));
+      } else if (remindMe == "15 mins before") {
+        reminderTime = scheduledDate.subtract(const Duration(minutes: 15));
+      } else if (remindMe == "20 mins before") {
+        reminderTime = scheduledDate.subtract(const Duration(minutes: 20));
+      } else if (remindMe == "30 mins before") {
+        reminderTime = scheduledDate.subtract(const Duration(minutes: 30));
+      } else if (remindMe == "1 hour before") {
+        reminderTime = scheduledDate.subtract(const Duration(hours: 1));
+      } else if (remindMe == "1 day before") {
+        reminderTime = scheduledDate.subtract(const Duration(days: 1));
+      } else {
+        // Default to 1 day before if not recognized
+        reminderTime = scheduledDate.subtract(const Duration(days: 1));
+      }
+
+      // Only schedule if the reminder time is in the future
+      if (reminderTime.isAfter(DateTime.now())) {
+        NotificationService().scheduleNotification(
+          id: reminderBeforeId,
+          title: 'PetCare Reminder',
+          body: 'Reminder: $pet has $type appointment at ${time.format(context)} ‼️',
+          scheduledTime: reminderTime,
+        );
+      }
+    }
 
     // 3. Add to Firestore
     // Note: We use 'scheduledAt' for sorting, and 'createdAt' for auditing
@@ -577,8 +612,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
       'scheduledAt': Timestamp.fromDate(scheduledDate),
       'createdAt': FieldValue.serverTimestamp(),
       'notificationId': id, // Save this so we can cancel the alarm later
-      'notificationIdOneDayBefore':
-          reminderOneDayBefore, // Save the 1-day-before notification ID
+      'notificationIdOneDayBefore': reminderBeforeId, // Save the reminder-before notification ID
       'remindMe': remindMe,
       'repeat': repeat,
     });
