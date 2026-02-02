@@ -79,10 +79,8 @@ Firebase was selected due to its real-time synchronization, built-in authenticat
 ![PetCare Porject Timeline](images/GanttChart.png)
 
 
-## 3. Project Design
+## 3. Project Design   
+Figma: https://www.figma.com/design/xJbuvQeZgDbKIHkdIaNUxL/PetCare?node-id=0-1&t=f6zIwF1pEpKE6xFn-1
 
+## References
 
-## 4. Project Development
-
-
-## 5. References
