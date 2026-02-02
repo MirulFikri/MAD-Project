@@ -83,4 +83,18 @@ Firebase was selected due to its real-time synchronization, built-in authenticat
 Figma: https://www.figma.com/design/xJbuvQeZgDbKIHkdIaNUxL/PetCare?node-id=0-1&t=f6zIwF1pEpKE6xFn-1
 
 ## References
+- Add data to Cloud Firestore. (n.d.). Firebase. Retrieved February 2, 2026, from https://firebase.google.com/docs/firestore/manage-data/add-data
 
+- BottomNavigationBar class—Material library—Dart API. (n.d.). Retrieved February 2, 2026, from https://api.flutter.dev/flutter/material/BottomNavigationBar-class.html
+
+- Md Yusaini, N. Y. S., & Ali, N. A. (2025). PetPals: A Pet Care Companion Mobile Application for Pet Owners. Journal of Computing Technologies and Creative Content. https://doi.org/10.70672/qnhmye46
+
+- Navigation and routing. (n.d.). Retrieved February 2, 2026, from https://docs.flutter.dev/ui/ui/navigation/index.md
+
+- PetCare: A Smart Pet Care Mobile App Implementation and Functionality. (2025). International Journal of Modern Research in Engineering & Science (IJMRSET), 8(3).
+
+- Towards mHealth applications for pet animal owners: a comprehensive literature review of requirements. (2025). BMC Veterinary Research, 21, Article 190.
+
+- Woofz. (n.d.). In Wikipedia. https://en.wikipedia.org/wiki/Woofz
+
+- Wrap class—Widgets library—Dart API. (n.d.). Retrieved February 2, 2026, from https://api.flutter.dev/flutter/widgets/Wrap-class.html
