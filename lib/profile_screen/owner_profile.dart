@@ -140,55 +140,6 @@ class OwnerProfile extends StatelessWidget {
 
                         const SizedBox(height: 12),
 
-                        FutureBuilder<String>(
-                          future: _getReminderDiagnostics(
-                            authService.currentUserId ?? '',
-                          ),
-                          builder: (context, diagSnap) {
-                            final diag = diagSnap.data ?? '';
-                            return Card(
-                              color: diag.isEmpty
-                                  ? Colors.white
-                                  : Colors.yellow.shade50,
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(
-                                  color: diag.isEmpty
-                                      ? Colors.transparent
-                                      : Colors.orange.shade200,
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Diagnostics',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      diag.isEmpty
-                                          ? 'No diagnostic data (sign-in or network issue).'
-                                          : diag,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 12),
-
                         ElevatedButton.icon(
                           onPressed: () => Navigator.push(
                             context,
@@ -300,40 +251,6 @@ Future<String> _getUpcomingAppointment(String ownerId) async {
   } catch (e) {
     print('Error fetching upcoming appointment: $e');
     return '—';
-  }
-}
-
-Future<String> _getReminderDiagnostics(String ownerId) async {
-  if (ownerId.isEmpty) return '';
-  try {
-    final topLevel = await FirebaseFirestore.instance
-        .collection('reminders')
-        .where('ownerId', isEqualTo: ownerId)
-        .get();
-    final topLevelCount = topLevel.docs.length;
-    String topSample = '';
-    if (topLevel.docs.isNotEmpty)
-      topSample = 'topKeys: ${topLevel.docs.first.data().keys.join(', ')}';
-
-    final petDocs = await FirebaseFirestore.instance
-        .collection('pets')
-        .where('ownerId', isEqualTo: ownerId)
-        .get();
-    final petCount = petDocs.docs.length;
-    int petSubReminders = 0;
-    String petSample = '';
-    for (final petDoc in petDocs.docs) {
-      final sub = await petDoc.reference.collection('reminders').get();
-      if (sub.docs.isNotEmpty && petSample.isEmpty)
-        petSample =
-            'pet(${petDoc.id})Keys: ${sub.docs.first.data().keys.join(', ')}';
-      petSubReminders += sub.docs.length;
-    }
-
-    return 'uid: $ownerId · reminders: $topLevelCount · $topSample · pets: $petCount · petSubReminders: $petSubReminders${petSample.isNotEmpty ? ' · $petSample' : ''}';
-  } catch (e) {
-    print('Error fetching reminder diagnostics: $e');
-    return '';
   }
 }
 
