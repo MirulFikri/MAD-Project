@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petcare_app/services/auth_service.dart';
+import 'package:petcare_app/appointment/appointment_details.dart';
 
 class AppointmentsPage extends StatefulWidget {
   const AppointmentsPage({super.key});
@@ -187,20 +188,31 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   'Unknown Owner';
             }
 
-            return _AppointmentCard(
-              id: a['id'],
-              date: dateStr,
-              time: timeStr,
-              pet: a['pet'] ?? '',
-              ownerName: ownerName,
-              type: a['type'] ?? '',
-              status: a['status'] ?? 'Pending',
-              onStatusChange: (status) async {
-                await _firestore.collection('appointments').doc(a['id']).update(
-                  {'status': status},
-                );
-                await _loadAppointments();
-              },
+            return GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AppointmentDetailsScreen(
+                    appointmentId: a['id'],
+                    appointmentData: a,
+                  ),
+                ),
+              ),
+              child: _AppointmentCard(
+                id: a['id'],
+                date: dateStr,
+                time: timeStr,
+                pet: a['pet'] ?? '',
+                ownerName: ownerName,
+                type: a['type'] ?? '',
+                status: a['status'] ?? 'Pending',
+                onStatusChange: (status) async {
+                  await _firestore.collection('appointments').doc(a['id']).update(
+                    {'status': status},
+                  );
+                  await _loadAppointments();
+                },
+              ),
             );
           },
         );

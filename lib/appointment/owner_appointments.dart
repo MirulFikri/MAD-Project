@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petcare_app/services/auth_service.dart';
+import 'package:petcare_app/appointment/appointment_details.dart';
 
 class OwnerAppointmentsPage extends StatefulWidget {
   const OwnerAppointmentsPage({super.key});
@@ -125,33 +126,44 @@ class _OwnerAppointmentsPageState extends State<OwnerAppointmentsPage> {
                           timeStr = a['time'] ?? '';
                           dateStr = a['date'] ?? '';
                         }
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            leading: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  timeStr,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  dateStr,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
+                        return GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AppointmentDetailsScreen(
+                                appointmentId: a['id'],
+                                appointmentData: a,
+                              ),
                             ),
-                            title: Text('${a['pet']} — ${a['type']}'),
-                            subtitle: Text(a['vet'] ?? ''),
-                            trailing: TextButton(
-                              onPressed: () => _cancelAppointment(i),
-                              child: const Text('Cancel'),
+                          ),
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              leading: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    timeStr,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dateStr,
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              title: Text('${a['pet']} — ${a['type']}'),
+                              subtitle: Text(a['vet'] ?? ''),
+                              trailing: TextButton(
+                                onPressed: () => _cancelAppointment(i),
+                                child: const Text('Cancel'),
+                              ),
                             ),
                           ),
                         );
