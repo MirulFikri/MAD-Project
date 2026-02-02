@@ -20,6 +20,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Map<String, dynamic>? _appointment;
   String _ownerName = 'Unknown Owner';
+  String _ownerPhone = '—';
   String _clinicName = 'Unknown Clinic';
   bool _isLoading = true;
 
@@ -65,7 +66,18 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                 ownerData['displayName'] ??
                 ownerData['ownerName'] ??
                 'Unknown Owner';
+            _ownerPhone =
+                ownerData['phone'] ??
+                ownerData['phoneNumber'] ??
+                ownerData['contactNumber'] ??
+                data['phone'] ??
+                '—';
           }
+        }
+
+        // Fallback to appointment data for phone if owner lookup didn't work
+        if (_ownerPhone == '—' && data['phone'] != null) {
+          _ownerPhone = data['phone'];
         }
 
         if (data['clinicName'] != null && data['clinicName'] != '') {
@@ -160,7 +172,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                         title: 'Owner',
                         children: [
                           _infoRow('Name', _ownerName),
-                          _infoRow('Phone', _appointment?['phone'] ?? '—'),
+                          _infoRow('Phone', _ownerPhone),
                         ],
                       ),
                       const SizedBox(height: 16),
