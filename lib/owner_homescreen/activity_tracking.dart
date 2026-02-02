@@ -1,6 +1,108 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petcare_app/services/auth_service.dart';
+class _AddActivityForm extends StatefulWidget {
+  final String petName;
+  const _AddActivityForm({required this.petName});
+
+  @override
+  State<_AddActivityForm> createState() => _AddActivityFormState();
+}
+
+class _AddActivityFormState extends State<_AddActivityForm> {
+  String type = 'walk';
+  final titleController = TextEditingController();
+  final timeController = TextEditingController();
+  final durationController = TextEditingController();
+  final distanceController = TextEditingController();
+  final amountController = TextEditingController();
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    timeController.dispose();
+    durationController.dispose();
+    distanceController.dispose();
+    amountController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add Activity'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              value: type,
+              items: const [
+                DropdownMenuItem(value: 'walk', child: Text('Walk')),
+                DropdownMenuItem(value: 'meal', child: Text('Meal')),
+                DropdownMenuItem(value: 'exercise', child: Text('Exercise')),
+              ],
+              onChanged: (v) => setState(() => type = v ?? 'walk'),
+              decoration: const InputDecoration(labelText: 'Type'),
+            ),
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+            ),
+            TextField(
+              controller: timeController,
+              decoration: const InputDecoration(labelText: 'Time (e.g. 7:30 AM)'),
+            ),
+            if (type == 'walk' || type == 'exercise')
+              TextField(
+                controller: durationController,
+                decoration: const InputDecoration(labelText: 'Duration (min)'),
+                keyboardType: TextInputType.number,
+              ),
+            if (type == 'walk')
+              TextField(
+                controller: distanceController,
+                decoration: const InputDecoration(labelText: 'Distance (km)'),
+                keyboardType: TextInputType.number,
+              ),
+            if (type == 'meal')
+              TextField(
+                controller: amountController,
+                decoration: const InputDecoration(labelText: 'Amount (e.g. 250g)'),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final data = <String, dynamic>{
+              'type': type,
+              'title': titleController.text,
+              'time': timeController.text,
+            };
+            if (type == 'walk' || type == 'exercise') {
+              data['durationMin'] = int.tryParse(durationController.text) ?? 0;
+            }
+            if (type == 'walk') {
+              data['distance'] = double.tryParse(distanceController.text) ?? 0.0;
+            }
+            if (type == 'meal') {
+              data['amount'] = amountController.text;
+            }
+            Navigator.pop(context, data);
+          },
+          child: const Text('Add'),
+        ),
+      ],
+    );
+  }
+}
+
 
 class ActivityTrackingPage extends StatefulWidget {
   const ActivityTrackingPage({Key? key}) : super(key: key);
@@ -10,40 +112,15 @@ class ActivityTrackingPage extends StatefulWidget {
 }
 
 class _ActivityTrackingPageState extends State<ActivityTrackingPage> {
+    bool _isLoading = false;
   String? selectedPet;
   List<String> petNames = [];
-  int walksToday = 3;
-  double distanceKm = 6.3;
-  int activeTimeMin = 120;
+  int walksToday = 0;
+  double distanceKm = 0.0;
+  int activeTimeMin = 0;
   int selectedFilter = 0; // 0: All, 1: Walks, 2: Meals, 3: Exercise
 
-  final List<Map<String, dynamic>> activities = [
-    {
-      'type': 'walk',
-      'title': 'Morning Walk',
-      'time': '7:30 AM',
-      'duration': '30 min',
-      'distance': '2.5 km',
-      'icon': Icons.directions_walk,
-      'iconColor': Color(0xFF6C7AFA),
-    },
-    {
-      'type': 'meal',
-      'title': 'Breakfast',
-      'time': '8:00 AM',
-      'amount': '250g',
-      'icon': Icons.restaurant,
-      'iconColor': Color(0xFF4DD786),
-    },
-    {
-      'type': 'meal',
-      'title': 'Lunch',
-      'time': '1:00 PM',
-      'amount': '300g',
-      'icon': Icons.restaurant,
-      'iconColor': Color(0xFF4DD786),
-    },
-  ];
+  List<Map<String, dynamic>> activities = [];
 
   List<Map<String, dynamic>> get filteredActivities {
     if (selectedFilter == 0) return activities;
@@ -72,8 +149,96 @@ class _ActivityTrackingPageState extends State<ActivityTrackingPage> {
       petNames = names;
       if (petNames.isNotEmpty) {
         selectedPet = petNames.first;
+        _fetchActivities();
       }
     });
+  }
+
+  Future<void> _fetchActivities() async {
+    if (selectedPet == null) return;
+    final auth = AuthService();
+    final uid = auth.currentUserId;
+    if (uid == null) return;
+    setState(() { _isLoading = true; });
+    print('Fetching activities for pet: $selectedPet, all pets: $petNames');
+    final snapshot = await FirebaseFirestore.instance
+      .collection('activities')
+      .where('ownerId', isEqualTo: uid)
+      .where('petName', isEqualTo: selectedPet)
+      .orderBy('timestamp', descending: true)
+      .get();
+    final acts = snapshot.docs.map((doc) {
+      final data = doc.data();
+      // Add UI fields for display
+      switch (data['type']) {
+        case 'walk':
+          data['icon'] = Icons.directions_walk;
+          data['iconColor'] = const Color(0xFF6C7AFA);
+          data['duration'] = (data['durationMin'] != null && data['durationMin'].toString().isNotEmpty)
+              ? "${data['durationMin']} min"
+              : "0 min";
+          data['distance'] = (data['distance'] != null && data['distance'].toString().isNotEmpty)
+              ? "${data['distance']} km"
+              : "0 km";
+          break;
+        case 'meal':
+          data['icon'] = Icons.restaurant;
+          data['iconColor'] = const Color(0xFF4DD786);
+          data['amount'] = (data['amount'] != null && data['amount'].toString().isNotEmpty)
+              ? data['amount']
+              : "-";
+          break;
+        case 'exercise':
+          data['icon'] = Icons.fitness_center;
+          data['iconColor'] = const Color(0xFF7C3AED);
+          data['duration'] = (data['durationMin'] != null && data['durationMin'].toString().isNotEmpty)
+              ? "${data['durationMin']} min"
+              : "0 min";
+          break;
+        default:
+          data['icon'] = Icons.help_outline;
+          data['iconColor'] = Colors.grey;
+      }
+      return data;
+    }).toList();
+    // Debug print
+    print('Fetched activities:');
+    for (final a in acts) {
+      print(a);
+    }
+    acts.sort((a, b) {
+      final at = a['timestamp'] is Timestamp ? (a['timestamp'] as Timestamp).toDate() : a['timestamp'];
+      final bt = b['timestamp'] is Timestamp ? (b['timestamp'] as Timestamp).toDate() : b['timestamp'];
+      return bt.compareTo(at);
+    });
+    setState(() {
+      activities = acts;
+      walksToday = activities.where((a) => a['type'] == 'walk').length;
+      distanceKm = activities.where((a) => a['type'] == 'walk').fold(0.0, (sum, a) => sum + (double.tryParse((a['distance'] ?? '').toString().split(' ').first) ?? 0.0));
+      activeTimeMin = (activities.fold<num>(0, (sum, a) => sum + (a['durationMin'] ?? 0))).toInt();
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _addActivityDialog() async {
+    if (selectedPet == null) return;
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => _AddActivityForm(petName: selectedPet!),
+    );
+    if (result != null) {
+      final auth = AuthService();
+      final uid = auth.currentUserId;
+      if (uid == null) return;
+      await FirebaseFirestore.instance.collection('activities').add({
+        ...result,
+        'ownerId': uid,
+        'petName': selectedPet,
+        'timestamp': DateTime.now(),
+      });
+      await _fetchActivities();
+      setState(() {});
+    }
   }
 
   @override
@@ -104,7 +269,7 @@ class _ActivityTrackingPageState extends State<ActivityTrackingPage> {
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.add_circle, color: Color(0xFF2563EB), size: 30),
-                        onPressed: () {},
+                        onPressed: _addActivityDialog,
                       ),
                     ],
                   ),
@@ -130,7 +295,10 @@ class _ActivityTrackingPageState extends State<ActivityTrackingPage> {
                                 .map((name) => DropdownMenuItem(value: name, child: Text(name)))
                                 .toList(),
                             onChanged: (v) {
-                              if (v != null) setState(() => selectedPet = v);
+                              if (v != null) {
+                                setState(() => selectedPet = v);
+                                _fetchActivities();
+                              }
                             },
                           ),
                         ),
@@ -190,7 +358,17 @@ class _ActivityTrackingPageState extends State<ActivityTrackingPage> {
                   const Text('TODAY', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey)),
                   const SizedBox(height: 8),
                   // Activity List
-                  ...filteredActivities.map((a) => _ActivityCard(activity: a)).toList(),
+                  if (_isLoading)
+                    const Center(child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: CircularProgressIndicator(),
+                    ))
+                  else if (filteredActivities.isEmpty)
+                    const Center(child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text('No activities found for this pet.'),
+                    ))
+                  else ...filteredActivities.map((a) => _ActivityCard(activity: a)).toList(),
                 ],
               ),
             ),
