@@ -22,9 +22,16 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
     
-    // Allow authenticated users to access medical records
+    // Allow clinics to create medical records for their appointments
+    // Allow owners to read medical records for their pets
     match /medicalRecords/{recordId} {
-      allow read, write: if request.auth != null;
+      allow create: if request.auth != null && 
+                       request.resource.data.clinicId == request.auth.uid;
+      allow read: if request.auth != null && 
+                     (request.auth.uid == resource.data.clinicId || 
+                      request.auth.uid == resource.data.ownerId);
+      allow update, delete: if request.auth != null && 
+                               request.auth.uid == resource.data.clinicId;
     }
     
     // Allow owners to access their pets
