@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petcare_app/services/auth_service.dart';
+
 class _AddActivityForm extends StatefulWidget {
   final String petName;
   const _AddActivityForm({required this.petName});
@@ -161,63 +162,80 @@ class _ActivityTrackingPageState extends State<ActivityTrackingPage> {
     if (uid == null) return;
     setState(() { _isLoading = true; });
     print('Fetching activities for pet: $selectedPet, all pets: $petNames');
-    final snapshot = await FirebaseFirestore.instance
-      .collection('activities')
-      .where('ownerId', isEqualTo: uid)
-      .where('petName', isEqualTo: selectedPet)
-      .orderBy('timestamp', descending: true)
-      .get();
-    final acts = snapshot.docs.map((doc) {
-      final data = doc.data();
-      // Add UI fields for display
-      switch (data['type']) {
-        case 'walk':
-          data['icon'] = Icons.directions_walk;
-          data['iconColor'] = const Color(0xFF6C7AFA);
-          data['duration'] = (data['durationMin'] != null && data['durationMin'].toString().isNotEmpty)
-              ? "${data['durationMin']} min"
-              : "0 min";
-          data['distance'] = (data['distance'] != null && data['distance'].toString().isNotEmpty)
-              ? "${data['distance']} km"
-              : "0 km";
-          break;
-        case 'meal':
-          data['icon'] = Icons.restaurant;
-          data['iconColor'] = const Color(0xFF4DD786);
-          data['amount'] = (data['amount'] != null && data['amount'].toString().isNotEmpty)
-              ? data['amount']
-              : "-";
-          break;
-        case 'exercise':
-          data['icon'] = Icons.fitness_center;
-          data['iconColor'] = const Color(0xFF7C3AED);
-          data['duration'] = (data['durationMin'] != null && data['durationMin'].toString().isNotEmpty)
-              ? "${data['durationMin']} min"
-              : "0 min";
-          break;
-        default:
-          data['icon'] = Icons.help_outline;
-          data['iconColor'] = Colors.grey;
+    
+    try {
+      final snapshot = await FirebaseFirestore.instance
+        .collection('activities')
+        .where('ownerId', isEqualTo: uid)
+        .where('petName', isEqualTo: selectedPet)
+        .orderBy('timestamp', descending: true)
+        .get();
+      final acts = snapshot.docs.map((doc) {
+        final data = doc.data();
+        // Add UI fields for display
+        switch (data['type']) {
+          case 'walk':
+            data['icon'] = Icons.directions_walk;
+            data['iconColor'] = const Color(0xFF6C7AFA);
+            data['duration'] = (data['durationMin'] != null && data['durationMin'].toString().isNotEmpty)
+                ? "${data['durationMin']} min"
+                : "0 min";
+            data['distance'] = (data['distance'] != null && data['distance'].toString().isNotEmpty)
+                ? "${data['distance']} km"
+                : "0 km";
+            break;
+          case 'meal':
+            data['icon'] = Icons.restaurant;
+            data['iconColor'] = const Color(0xFF4DD786);
+            data['amount'] = (data['amount'] != null && data['amount'].toString().isNotEmpty)
+                ? data['amount']
+                : "-";
+            break;
+          case 'exercise':
+            data['icon'] = Icons.fitness_center;
+            data['iconColor'] = const Color(0xFF7C3AED);
+            data['duration'] = (data['durationMin'] != null && data['durationMin'].toString().isNotEmpty)
+                ? "${data['durationMin']} min"
+                : "0 min";
+            break;
+          default:
+            data['icon'] = Icons.help_outline;
+            data['iconColor'] = Colors.grey;
+        }
+        return data;
+      }).toList();
+      // Debug print
+      print('Fetched activities:');
+      for (final a in acts) {
+        print(a);
       }
-      return data;
-    }).toList();
-    // Debug print
-    print('Fetched activities:');
-    for (final a in acts) {
-      print(a);
+      acts.sort((a, b) {
+        final at = a['timestamp'] is Timestamp ? (a['timestamp'] as Timestamp).toDate() : a['timestamp'];
+        final bt = b['timestamp'] is Timestamp ? (b['timestamp'] as Timestamp).toDate() : b['timestamp'];
+        return bt.compareTo(at);
+      });
+      setState(() {
+        activities = acts;
+        walksToday = activities.where((a) => a['type'] == 'walk').length;
+        distanceKm = activities.where((a) => a['type'] == 'walk').fold(0.0, (sum, a) => sum + (double.tryParse((a['distance'] ?? '').toString().split(' ').first) ?? 0.0));
+        activeTimeMin = (activities.fold<num>(0, (sum, a) => sum + (a['durationMin'] ?? 0))).toInt();
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching activities: $e');
+      setState(() {
+        activities = [];
+        _isLoading = false;
+      });
+      if (mounted && e.toString().contains('index')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Database index required. Check console for setup link.'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
     }
-    acts.sort((a, b) {
-      final at = a['timestamp'] is Timestamp ? (a['timestamp'] as Timestamp).toDate() : a['timestamp'];
-      final bt = b['timestamp'] is Timestamp ? (b['timestamp'] as Timestamp).toDate() : b['timestamp'];
-      return bt.compareTo(at);
-    });
-    setState(() {
-      activities = acts;
-      walksToday = activities.where((a) => a['type'] == 'walk').length;
-      distanceKm = activities.where((a) => a['type'] == 'walk').fold(0.0, (sum, a) => sum + (double.tryParse((a['distance'] ?? '').toString().split(' ').first) ?? 0.0));
-      activeTimeMin = (activities.fold<num>(0, (sum, a) => sum + (a['durationMin'] ?? 0))).toInt();
-      _isLoading = false;
-    });
   }
 
   Future<void> _addActivityDialog() async {
