@@ -58,7 +58,7 @@ class _VetDashboardState extends State<VetDashboard> {
       _isLoading = false;
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
@@ -277,9 +277,15 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double iconSize = MediaQuery.of(context).size.width < 400 ? 22 : 26;
-    final double numberFontSize = MediaQuery.of(context).size.width < 400 ? 15 : 17;
-    final double labelFontSize = MediaQuery.of(context).size.width < 400 ? 8 : 10;
-    final double trendFontSize = MediaQuery.of(context).size.width < 400 ? 8 : 9;
+    final double numberFontSize = MediaQuery.of(context).size.width < 400
+        ? 15
+        : 17;
+    final double labelFontSize = MediaQuery.of(context).size.width < 400
+        ? 8
+        : 10;
+    final double trendFontSize = MediaQuery.of(context).size.width < 400
+        ? 8
+        : 9;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
@@ -351,9 +357,15 @@ class _AppointmentTileWithDelete extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double timeFontSize = MediaQuery.of(context).size.width < 400 ? 12 : 14;
-    final double petNameFontSize = MediaQuery.of(context).size.width < 400 ? 13 : 15;
-    final double statusFontSize = MediaQuery.of(context).size.width < 400 ? 10 : 12;
+    final double timeFontSize = MediaQuery.of(context).size.width < 400
+        ? 12
+        : 14;
+    final double petNameFontSize = MediaQuery.of(context).size.width < 400
+        ? 13
+        : 15;
+    final double statusFontSize = MediaQuery.of(context).size.width < 400
+        ? 10
+        : 12;
 
     Color statusColor = Colors.grey;
     if (appointment.status == 'Confirmed') statusColor = Colors.green;

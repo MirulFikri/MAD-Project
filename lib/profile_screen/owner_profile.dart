@@ -275,12 +275,12 @@ Future<String> _getUpcomingAppointment(String ownerId) async {
     final appointmentsSnapshot = await FirebaseFirestore.instance
         .collection('appointments')
         .where('ownerId', isEqualTo: ownerId)
-        .orderBy('appointmentDate', descending: false)
+        .orderBy('dateTime', descending: false)
         .get();
 
     for (final doc in appointmentsSnapshot.docs) {
       final data = doc.data();
-      final appointmentDate = data['appointmentDate'];
+      final appointmentDate = data['dateTime'];
 
       DateTime? dateTime;
       if (appointmentDate is Timestamp) {
