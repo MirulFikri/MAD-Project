@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petcare_app/services/auth_service.dart';
+import 'package:petcare_app/patients_screen/patinet_details.dart';
 
 class PatientsPage extends StatefulWidget {
   const PatientsPage({super.key});
@@ -156,6 +157,8 @@ class _PatientsPageState extends State<PatientsPage> {
                         weight: weight,
                         ownerName: ownerName,
                         ownerPhone: ownerPhone,
+                        petId: petId,
+                        ownerId: ownerId,
                       );
                     },
                   );
@@ -178,6 +181,8 @@ class _PatientCard extends StatelessWidget {
   final String weight;
   final String ownerName;
   final String ownerPhone;
+  final String petId;
+  final String ownerId;
 
   const _PatientCard({
     required this.appointmentId,
@@ -188,6 +193,8 @@ class _PatientCard extends StatelessWidget {
     required this.weight,
     required this.ownerName,
     required this.ownerPhone,
+    required this.petId,
+    required this.ownerId,
   });
 
   String get displayPatientName =>
@@ -200,10 +207,22 @@ class _PatientCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
+      onTap: () => Navigator.push(
         context,
-        '/medical_records',
-        arguments: appointmentId,
+        MaterialPageRoute(
+          builder: (context) => PatientDetailsScreen(
+            appointmentId: appointmentId,
+            petId: petId,
+            ownerId: ownerId,
+            patientName: patientName,
+            ownerName: ownerName,
+            ownerPhone: ownerPhone,
+            breed: breed,
+            age: age,
+            height: height,
+            weight: weight,
+          ),
+        ),
       ),
       child: Container(
         decoration: BoxDecoration(
