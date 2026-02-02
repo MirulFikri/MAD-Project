@@ -59,8 +59,18 @@ class _PetProfileState extends State<PetProfile> {
           .get();
 
       final records = recordsSnapshot.docs
-          .map((doc) => doc.data())
+          .map((doc) => {...doc.data(), 'id': doc.id})
           .toList();
+
+      // Sort by createdAt in memory
+      records.sort((a, b) {
+        final aTime = a['createdAt'] as Timestamp?;
+        final bTime = b['createdAt'] as Timestamp?;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        return bTime.compareTo(aTime);
+      });
 
       setState(() {
         _selectedPetData = petDoc.data();
@@ -261,22 +271,53 @@ class _PetProfileState extends State<PetProfile> {
                         ),
                         const SizedBox(height: 20),
                         // Health Records header
-                        const Text(
-                          'Health Records',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Medical Records',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '${_healthRecords.length} records',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 12),
                         // Records list
                         if (_healthRecords.isEmpty)
-                          Center(
-                            child: Text(
-                              'No health records yet',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
+                            ),
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.medical_services_outlined,
+                                    size: 48,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No medical records yet',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           )
@@ -285,11 +326,7 @@ class _PetProfileState extends State<PetProfile> {
                             children: _healthRecords.map((record) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
-                                child: _RecordCard(
-                                  type: record['type'] as String? ?? 'Record',
-                                  date: record['date'] as String? ?? '-',
-                                  nextDue: record['nextDue'] as String? ?? '-',
-                                ),
+                                child: _MedicalRecordCard(record: record),
                               );
                             }).toList(),
                           ),
@@ -341,60 +378,114 @@ class _InfoTile extends StatelessWidget {
 }
 
 class _RecordCard extends StatelessWidget {
-  final String type;
-  final String date;
-  final String nextDue;
-  const _RecordCard({
-    required this.type,
-    required this.date,
-    required this.nextDue,
-  });
+  final Map<String, dynamic> record;
+  const _RecordCard({required this.record});
 
   @override
   Widget build(BuildContext context) {
+    final title = record['title'] as String? ?? 'Medical Record';
+    final description = record['description'] as String? ?? '';
+    final date = record['date'] as String? ?? 'N/A';
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              type,
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(
-                'Date: $date',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.medical_services,
+                  color: Colors.blue[700],
+                  size: 20,
+                ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Next: $nextDue',
-                style: const TextStyle(color: Colors.grey),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          date,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
+          if (description.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
+  }
+}
+
+// Alias for backward compatibility
+class _MedicalRecordCard extends StatelessWidget {
+  final Map<String, dynamic> record;
+  const _MedicalRecordCard({required this.record});
+
+  @override
+  Widget build(BuildContext context) {
+    return _RecordCard(record: record);
   }
 }
