@@ -30,8 +30,8 @@ class _PatientsPageState extends State<PatientsPage> {
           padding: const EdgeInsets.all(16),
           child: StreamBuilder<QuerySnapshot>(
             stream: _firestore
-                .collection('appointments')
-                .where('clinicId', isEqualTo: clinicId)
+                .collection('pets')
+                .where('treatingClinics', arrayContains: clinicId)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -44,21 +44,7 @@ class _PatientsPageState extends State<PatientsPage> {
 
               final docs = snapshot.data?.docs ?? [];
 
-              // Filter for confirmed status and deduplicate by petId
-              final Map<String, dynamic> uniquePets = {};
-              for (var doc in docs) {
-                final data = doc.data() as Map<String, dynamic>;
-                if (data['status'] == 'Confirmed' ||
-                    data['status'] == 'accepted') {
-                  final petId = data['petId'] ?? '';
-                  if (petId.isNotEmpty && !uniquePets.containsKey(petId)) {
-                    uniquePets[petId] = {'appointmentId': doc.id, 'data': data};
-                  }
-                }
-              }
-
-              final confirmedDocs = uniquePets.values.toList();
-              if (confirmedDocs.isEmpty) {
+              if (docs.isEmpty) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -89,67 +75,43 @@ class _PatientsPageState extends State<PatientsPage> {
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                 ),
-                itemCount: confirmedDocs.length,
+                itemCount: docs.length,
                 itemBuilder: (context, i) {
-                  final appointmentId = confirmedDocs[i]['appointmentId'];
-                  final data = confirmedDocs[i]['data'] as Map<String, dynamic>;
-                  final ownerId = data['ownerId'] ?? '';
-                  final petId = data['petId'] ?? '';
+                  final petData = docs[i].data() as Map<String, dynamic>;
+                  final petId = docs[i].id;
+                  final ownerId = petData['ownerId'] ?? '';
+                  final petName = petData['name'] ?? 'Unknown Pet';
+                  final breed = petData['breed'] ?? '--';
+                  final age = petData['age']?.toString() ?? '--';
+                  final height = petData['height']?.toString() ?? '--';
+                  final weight = petData['weight']?.toString() ?? '--';
 
-                  // Use FutureBuilder to fetch both owner and pet details
-                  return FutureBuilder<List<dynamic>>(
-                    future: Future.wait([
-                      _firestore.collection('owners').doc(ownerId).get(),
-                      _firestore.collection('pets').doc(petId).get(),
-                    ]),
-                    builder: (context, snapshots) {
+                  // Fetch owner details
+                  return FutureBuilder<DocumentSnapshot>(
+                    future: _firestore.collection('owners').doc(ownerId).get(),
+                    builder: (context, ownerSnapshot) {
                       String ownerName = 'Unknown Owner';
                       String ownerPhone = '--';
-                      String petName = data['petName'] ?? 'Unknown Pet';
-                      String breed = data['breed'] ?? '--';
-                      String species = data['species'] ?? '--';
-                      String age = data['age']?.toString() ?? '--';
-                      String height = data['height']?.toString() ?? '--';
-                      String weight = data['weight']?.toString() ?? '--';
 
-                      if (snapshots.hasData) {
-                        final ownerDoc = snapshots.data![0] as DocumentSnapshot;
-                        final petDoc = snapshots.data![1] as DocumentSnapshot;
-
-                        if (ownerDoc.exists) {
-                          final ownerData =
-                              ownerDoc.data() as Map<String, dynamic>? ?? {};
-                          // Try multiple field names for owner name from owners collection
-                          ownerName =
-                              ownerData['fullName'] ??
-                              ownerData['name'] ??
-                              ownerData['firstName'] ??
-                              ownerData['lastName'] ??
-                              ownerData['displayName'] ??
-                              ownerData['ownerName'] ??
-                              'Unknown Owner';
-                          ownerPhone =
-                              ownerData['phone'] ??
-                              ownerData['phoneNumber'] ??
-                              '--';
-                        }
-
-                        if (petDoc.exists) {
-                          final petData =
-                              petDoc.data() as Map<String, dynamic>? ?? {};
-                          petName =
-                              petData['name'] ?? petData['petName'] ?? petName;
-                          breed = petData['breed'] ?? breed;
-                          species =
-                              petData['species'] ?? petData['type'] ?? species;
-                          age = petData['age']?.toString() ?? age;
-                          height = petData['height']?.toString() ?? height;
-                          weight = petData['weight']?.toString() ?? weight;
-                        }
+                      if (ownerSnapshot.hasData && ownerSnapshot.data!.exists) {
+                        final ownerData =
+                            ownerSnapshot.data!.data() as Map<String, dynamic>;
+                        ownerName =
+                            ownerData['fullName'] ??
+                            ownerData['name'] ??
+                            ownerData['firstName'] ??
+                            ownerData['lastName'] ??
+                            ownerData['displayName'] ??
+                            ownerData['ownerName'] ??
+                            'Unknown Owner';
+                        ownerPhone =
+                            ownerData['phone'] ??
+                            ownerData['phoneNumber'] ??
+                            '--';
                       }
 
                       return _PatientCard(
-                        appointmentId: appointmentId,
+                        appointmentId: petId,
                         patientName: petName,
                         breed: breed,
                         age: age,

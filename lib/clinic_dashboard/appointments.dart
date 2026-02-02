@@ -38,7 +38,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         .where('clinicId', isEqualTo: uid);
     final snapshot = await query.get();
     setState(() {
-      appointments = snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      appointments = snapshot.docs
+          .map((doc) => {'id': doc.id, ...doc.data()})
+          .toList();
       _isLoading = false;
     });
   }
@@ -65,17 +67,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search), 
-                      hintText: 'Search appointments', 
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
-                    )
+                      prefixIcon: const Icon(Icons.search),
+                      hintText: 'Search appointments',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
-                  onPressed: () {}, 
-                  icon: const Icon(Icons.filter_list), 
-                  label: const Text('Filter')
+                  onPressed: () {},
+                  icon: const Icon(Icons.filter_list),
+                  label: const Text('Filter'),
                 ),
               ],
             ),
@@ -90,13 +94,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   onPressed: (i) => setState(() => calendarMode = i == 1),
                   children: const [
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12), 
-                      child: Text('List')
-                    ), 
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('List'),
+                    ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12), 
-                      child: Text('Calendar')
-                    )
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('Calendar'),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 12),
@@ -104,14 +108,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['All', 'Confirmed', 'Pending', 'Urgent'].map<Widget>((t) => Padding(
-                        padding: const EdgeInsets.only(right: 8), 
-                        child: ChoiceChip(
-                          label: Text(t), 
-                          selected: statusFilter == t, 
-                          onSelected: (_) => setState(() => statusFilter = t)
-                        )
-                      )).toList(),
+                      children: ['All', 'Confirmed', 'Pending', 'Urgent']
+                          .map<Widget>(
+                            (t) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(t),
+                                selected: statusFilter == t,
+                                onSelected: (_) =>
+                                    setState(() => statusFilter = t),
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                 ),
@@ -167,15 +176,36 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(onPressed: () => setState(() => selectedMonth = DateTime(selectedMonth.year, selectedMonth.month - 1)), icon: const Icon(Icons.chevron_left)),
-            Text('${_monthName(selectedMonth.month)} ${selectedMonth.year}', style: const TextStyle(fontWeight: FontWeight.w700)),
-            IconButton(onPressed: () => setState(() => selectedMonth = DateTime(selectedMonth.year, selectedMonth.month + 1)), icon: const Icon(Icons.chevron_right)),
+            IconButton(
+              onPressed: () => setState(
+                () => selectedMonth = DateTime(
+                  selectedMonth.year,
+                  selectedMonth.month - 1,
+                ),
+              ),
+              icon: const Icon(Icons.chevron_left),
+            ),
+            Text(
+              '${_monthName(selectedMonth.month)} ${selectedMonth.year}',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            IconButton(
+              onPressed: () => setState(
+                () => selectedMonth = DateTime(
+                  selectedMonth.year,
+                  selectedMonth.month + 1,
+                ),
+              ),
+              icon: const Icon(Icons.chevron_right),
+            ),
           ],
         ),
         const SizedBox(height: 8),
         Expanded(
           child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+            ),
             itemCount: 35,
             itemBuilder: (_, i) => Card(
               margin: const EdgeInsets.all(4),
@@ -186,16 +216,21 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   children: [
                     Text('${i + 1}'),
                     const Spacer(),
-                    if (i % 7 == 1) 
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), 
-                      decoration: BoxDecoration(color: Colors.blue[50], 
-                      borderRadius: BorderRadius.circular(6)), 
-                      child: const Text(
-                        '2 appts', 
-                        style: TextStyle(fontSize: 10, color: Colors.blue)
-                      )
-                    )
+                    if (i % 7 == 1)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          '2 appts',
+                          style: TextStyle(fontSize: 10, color: Colors.blue),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -207,11 +242,23 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   String _monthName(int month) {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
     return months[month - 1];
   }
 }
-
 
 class _AppointmentCard extends StatelessWidget {
   final String id;
@@ -246,11 +293,14 @@ class _AppointmentCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(time, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(
+                    time,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(height: 6),
-                  Text(duration, style: const TextStyle(color: Colors.grey))
-                ]
-              )
+                  Text(duration, style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -259,9 +309,9 @@ class _AppointmentCard extends StatelessWidget {
                 children: [
                   Text('$pet — $type', style: const TextStyle(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
-                  Text(owner, style: const TextStyle(color: Colors.grey))
-                ]
-              )
+                  Text(owner, style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
             ),
             if (status == 'Pending') ...[
               ElevatedButton(
@@ -275,10 +325,13 @@ class _AppointmentCard extends StatelessWidget {
                 child: const Text('Decline'),
               ),
             ] else ...[
-              Text(status, style: TextStyle(
-                color: status == 'Confirmed' ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-              )),
+              Text(
+                status,
+                style: TextStyle(
+                  color: status == 'Confirmed' ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ],
         ),

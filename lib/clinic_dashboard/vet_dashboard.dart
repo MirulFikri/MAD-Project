@@ -281,12 +281,42 @@ class _VetDashboardState extends State<VetDashboard> {
                                   : _AppointmentTileWithDelete(
                                       appointment: todayAppointments[i],
                                       onDelete: () async {
-                                        setState(
-                                          () => appointments.removeWhere(
-                                            (a) =>
-                                                a.id == todayAppointments[i].id,
-                                          ),
-                                        );
+                                        try {
+                                          await _firestore
+                                              .collection('appointments')
+                                              .doc(todayAppointments[i].id)
+                                              .delete();
+                                          setState(
+                                            () => appointments.removeWhere(
+                                              (a) =>
+                                                  a.id ==
+                                                  todayAppointments[i].id,
+                                            ),
+                                          );
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Appointment deleted',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Error deleting: $e',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        }
                                       },
                                     ),
                             ),
