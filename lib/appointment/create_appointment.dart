@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petcare_app/models/appointment.dart';
+import 'package:petcare_app/models/appointment_status.dart';
 // id generation uses timestamp to avoid external dependency
 
 class CreateAppointmentPage extends StatefulWidget {

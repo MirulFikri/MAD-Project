@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_app/appointment/create_appointment.dart';
-import 'package:petcare_app/models/appointment.dart';
+import 'package:petcare_app/models/appointment_status.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petcare_app/services/auth_service.dart';
 
