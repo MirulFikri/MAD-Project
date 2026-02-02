@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:petcare_app/profile_screen/clinic_profile.dart';
 import 'package:petcare_app/clinic_dashboard/vet_dashboard.dart';
 import 'package:petcare_app/clinic_dashboard/appointments.dart';
-import 'package:petcare_app/clinic_dashboard/patients.dart';
+import 'package:petcare_app/patients_screen/patients.dart';
 
 class ClinicNavigation extends StatefulWidget {
   const ClinicNavigation({super.key});

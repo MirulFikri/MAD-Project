@@ -84,7 +84,7 @@ class _PatientsPageState extends State<PatientsPage> {
               return GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.78,
+                  childAspectRatio: 1.0,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                 ),
@@ -216,7 +216,7 @@ class _PatientCard extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -225,40 +225,40 @@ class _PatientCard extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 24,
+                  fontSize: 22,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 'Owner: $ownerName',
-                style: const TextStyle(color: Colors.white70, fontSize: 15),
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 'Breed: $displayBreed',
-                style: const TextStyle(color: Colors.white70, fontSize: 15),
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 'Age: $displayAge years',
-                style: const TextStyle(color: Colors.white70, fontSize: 15),
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 'Height: $displayHeight cm',
-                style: const TextStyle(color: Colors.white70, fontSize: 15),
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 'Weight: $displayWeight kg',
-                style: const TextStyle(color: Colors.white70, fontSize: 15),
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 'Contact: $ownerPhone',
                 style: const TextStyle(
                   color: Colors.white70,
-                  fontSize: 14,
+                  fontSize: 12,
                   fontStyle: FontStyle.italic,
                 ),
               ),
