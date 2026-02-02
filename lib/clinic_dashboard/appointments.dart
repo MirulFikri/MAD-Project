@@ -54,7 +54,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           TextButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text('New Appointment', style: TextStyle(color: Colors.white))
+            label: const Text(
+              'New Appointment',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -152,17 +155,53 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       itemCount: filtered.length,
       itemBuilder: (context, i) {
         final a = filtered[i];
-        return _AppointmentCard(
-          id: a['id'],
-          time: a['time'] ?? '',
-          pet: a['pet'] ?? '',
-          owner: a['ownerId'] ?? '',
-          type: a['type'] ?? '',
-          duration: a['duration'] ?? '',
-          status: a['status'] ?? 'Pending',
-          onStatusChange: (status) async {
-            await _firestore.collection('appointments').doc(a['id']).update({'status': status});
-            await _loadAppointments();
+        final ownerId = a['ownerId'] ?? '';
+
+        DateTime? dateTime;
+        if (a['dateTime'] != null) {
+          dateTime = a['dateTime'] is Timestamp
+              ? (a['dateTime'] as Timestamp).toDate()
+              : (a['dateTime'] as DateTime);
+        }
+        final dateStr = dateTime != null
+            ? '${dateTime.month}/${dateTime.day}/${dateTime.year}'
+            : (a['date'] ?? '');
+        final timeStr = dateTime != null
+            ? TimeOfDay.fromDateTime(dateTime).format(context)
+            : (a['time'] ?? '');
+
+        return FutureBuilder<DocumentSnapshot>(
+          future: _firestore.collection('owners').doc(ownerId).get(),
+          builder: (context, ownerSnapshot) {
+            String ownerName = 'Unknown Owner';
+            if (ownerSnapshot.hasData && ownerSnapshot.data!.exists) {
+              final ownerData =
+                  ownerSnapshot.data!.data() as Map<String, dynamic>;
+              ownerName =
+                  ownerData['fullName'] ??
+                  ownerData['name'] ??
+                  ownerData['firstName'] ??
+                  ownerData['lastName'] ??
+                  ownerData['displayName'] ??
+                  ownerData['ownerName'] ??
+                  'Unknown Owner';
+            }
+
+            return _AppointmentCard(
+              id: a['id'],
+              date: dateStr,
+              time: timeStr,
+              pet: a['pet'] ?? '',
+              ownerName: ownerName,
+              type: a['type'] ?? '',
+              status: a['status'] ?? 'Pending',
+              onStatusChange: (status) async {
+                await _firestore.collection('appointments').doc(a['id']).update(
+                  {'status': status},
+                );
+                await _loadAppointments();
+              },
+            );
           },
         );
       },
@@ -262,20 +301,20 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
 class _AppointmentCard extends StatelessWidget {
   final String id;
+  final String date;
   final String time;
   final String pet;
-  final String owner;
+  final String ownerName;
   final String type;
-  final String duration;
   final String status;
   final void Function(String status) onStatusChange;
   const _AppointmentCard({
     required this.id,
+    required this.date,
     required this.time,
     required this.pet,
-    required this.owner,
+    required this.ownerName,
     required this.type,
-    required this.duration,
     required this.status,
     required this.onStatusChange,
   });
@@ -288,17 +327,20 @@ class _AppointmentCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Container(
-              width: 68,
+            SizedBox(
+              width: 88,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    time,
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    date,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  Text(duration, style: const TextStyle(color: Colors.grey)),
+                  Text(time, style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
@@ -307,9 +349,12 @@ class _AppointmentCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('$pet — $type', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(
+                    '$pet — $type',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(height: 4),
-                  Text(owner, style: const TextStyle(color: Colors.grey)),
+                  Text(ownerName, style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
