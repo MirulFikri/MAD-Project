@@ -3,6 +3,7 @@ import 'package:petcare_app/owner_homescreen/add_pet.dart';
 import 'package:petcare_app/profile_screen/pet_profile.dart';
 import 'package:petcare_app/services/auth_service.dart';
 import 'package:petcare_app/appointment/owner_appointments.dart';
+import 'package:petcare_app/owner_homescreen/activity_tracking.dart';
 
 // Placeholder screens - create these files later
 class OwnerHomeScreen extends StatefulWidget {
@@ -118,7 +119,12 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                         label: 'Activity Tracking',
                         color: Colors.green[400]!,
                         onTap: () {
-                          // Navigate to activity tracking
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ActivityTrackingPage(),
+                            ),
+                          );
                         },
                       ),
                       _NavigationCard(
@@ -135,7 +141,7 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const OwnerAppointmentsPage(),
+                              builder: (_) => OwnerAppointmentsPage(),
                             ),
                           );
                         },

@@ -225,7 +225,7 @@ class _VetDashboardState extends State<VetDashboard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
                           'Today\'s Appointments',
@@ -234,30 +234,6 @@ class _VetDashboardState extends State<VetDashboard> {
                                 ? 14
                                 : 16,
                             fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CreateAppointmentPage(
-                                onAppointmentCreated: _addAppointment,
-                              ),
-                            ),
-                          ).then((_) => setState(() {})),
-                          icon: Icon(
-                            Icons.add,
-                            size: MediaQuery.of(context).size.width < 400
-                                ? 16
-                                : 18,
-                          ),
-                          label: Text(
-                            'New',
-                            style: TextStyle(
-                              fontSize: MediaQuery.of(context).size.width < 400
-                                  ? 12
-                                  : 14,
-                            ),
                           ),
                         ),
                       ],
