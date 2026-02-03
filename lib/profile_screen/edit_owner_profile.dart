@@ -9,11 +9,15 @@ class EditOwnerProfile extends StatefulWidget {
 }
 
 class _EditOwnerProfileState extends State<EditOwnerProfile> {
+  /// Form key for validating form inputs before saving
   final _formKey = GlobalKey<FormState>();
+
   final _phoneCtrl = TextEditingController();
   final AuthService _authService = AuthService();
-  bool _isLoading = true;
-  bool _isSaving = false;
+  
+  /// Loading state flags
+  bool _isLoading = true;  // Shows loading indicator while fetching profile data
+  bool _isSaving = false;  // Shows loading indicator while saving changes
 
   @override
   void initState() {
@@ -51,7 +55,6 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Avatar with edit overlay
                       Center(
                         child: Stack(
                           children: [
@@ -64,6 +67,7 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                                 color: Colors.blue,
                               ),
                             ),
+                            // Edit button overlay on avatar
                             Positioned(
                               right: 0,
                               bottom: 0,
@@ -104,6 +108,7 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                         key: _formKey,
                         child: Column(
                           children: [
+                            // Phone field with validation
                             TextFormField(
                               controller: _phoneCtrl,
                               decoration: InputDecoration(
@@ -117,9 +122,7 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                                 ),
                               ),
                               keyboardType: TextInputType.phone,
-                              validator: (v) => (v == null || v.isEmpty)
-                                  ? 'Enter phone'
-                                  : null,
+                              validator: (v) => (v == null || v.isEmpty) ? 'Enter phone' : null,
                             ),
                           ],
                         ),
@@ -128,11 +131,10 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                       const SizedBox(height: 20),
                       Row(
                         children: [
+                          // Cancel button - disables while saving
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: _isSaving
-                                  ? null
-                                  : () => Navigator.pop(context),
+                              onPressed: _isSaving ? null : () => Navigator.pop(context),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: Colors.grey.shade300),
                                 shape: RoundedRectangleBorder(
@@ -146,6 +148,7 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
                             ),
                           ),
                           const SizedBox(width: 12),
+                          // Save button
                           Expanded(
                             child: ElevatedButton(
                               onPressed: _isSaving ? null : _save,
@@ -191,17 +194,21 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
       return;
     }
 
+    // Get owner data from Firestore
     final data = await _authService.getUserData(uid);
     if (data != null) {
       _phoneCtrl.text = (data['phone'] as String?) ?? '';
     }
 
+    // Mark loading as complete and rebuild UI
     if (mounted) {
       setState(() => _isLoading = false);
     }
   }
 
+  /// Validates and saves the edited owner profile data to Firestore
   Future<void> _save() async {
+    // Validate form inputs before saving
     if (!_formKey.currentState!.validate()) return;
 
     final uid = _authService.currentUserId;
@@ -212,8 +219,10 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
       return;
     }
 
+    // Show loading indicator
     setState(() => _isSaving = true);
 
+    // Update owner profile in Firestore
     final success = await _authService.updateUserProfile(
       uid: uid,
       userType: 'owner',
@@ -223,6 +232,7 @@ class _EditOwnerProfileState extends State<EditOwnerProfile> {
     if (!mounted) return;
     setState(() => _isSaving = false);
 
+    // Show result message and navigate back if successful
     if (success) {
       ScaffoldMessenger.of(
         context,

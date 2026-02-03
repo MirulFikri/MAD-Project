@@ -9,18 +9,27 @@ class EditClinicProfile extends StatefulWidget {
 }
 
 class _EditClinicProfileState extends State<EditClinicProfile> {
+  /// Form key for validating form inputs before saving
   final _formKey = GlobalKey<FormState>();
+  
+  /// Text controllers for managing form field inputs
   final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
   final _hoursCtrl = TextEditingController();
+  
   final AuthService _authService = AuthService();
+  
+  /// Set of selected services offered by the clinic
   Set<String> _selectedServices = {};
-  bool _isLoading = true;
-  bool _isSaving = false;
+  
+  /// Loading state flags
+  bool _isLoading = true;  // Shows loading indicator while fetching profile data
+  bool _isSaving = false;  // Shows loading indicator while saving changes
 
   @override
   void initState() {
     super.initState();
+    // Load existing clinic profile data from Firestore
     _loadProfile();
   }
 
@@ -56,7 +65,6 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Avatar with edit overlay
                       Center(
                         child: Stack(
                           children: [
@@ -69,6 +77,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                                 color: Colors.blue,
                               ),
                             ),
+                            // Edit button overlay on avatar
                             Positioned(
                               right: 0,
                               bottom: 0,
@@ -96,6 +105,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                       ),
 
                       const SizedBox(height: 18),
+                      // --- CLINIC INFORMATION SECTION ---
                       const Text(
                         'Clinic information',
                         style: TextStyle(
@@ -105,6 +115,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                       ),
                       const SizedBox(height: 12),
 
+                      // Form for editing clinic details with validation
                       Form(
                         key: _formKey,
                         child: Column(
@@ -122,11 +133,11 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                                 ),
                               ),
                               keyboardType: TextInputType.phone,
-                              validator: (v) => (v == null || v.isEmpty)
-                                  ? 'Enter phone'
-                                  : null,
+                              // Make syre phone field is not empty
+                              validator: (v) => (v == null || v.isEmpty) ? 'Enter phone' : null,
                             ),
                             const SizedBox(height: 12),
+                            // Address field (multi-line)
                             TextFormField(
                               controller: _addressCtrl,
                               decoration: InputDecoration(
@@ -142,11 +153,10 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                                 ),
                               ),
                               maxLines: 2,
-                              validator: (v) => (v == null || v.isEmpty)
-                                  ? 'Enter address'
-                                  : null,
+                              validator: (v) => (v == null || v.isEmpty) ? 'Enter address' : null,
                             ),
                             const SizedBox(height: 12),
+                            // Operating hours field
                             TextFormField(
                               controller: _hoursCtrl,
                               decoration: InputDecoration(
@@ -166,6 +176,8 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                       ),
 
                       const SizedBox(height: 20),
+
+                      // Let clinic select which services they offer
                       const Text(
                         'Services',
                         style: TextStyle(
@@ -174,6 +186,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      // Display services as selectable tags/chips
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -200,13 +213,14 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                       ),
 
                       const SizedBox(height: 20),
+                      // --- ACTION BUTTONS ---
                       Row(
                         children: [
+                          // Cancel button
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: _isSaving
-                                  ? null
-                                  : () => Navigator.pop(context),
+                              // Disable button while saving
+                              onPressed: _isSaving ? null : () => Navigator.pop(context),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: Colors.grey.shade300),
                                 shape: RoundedRectangleBorder(
@@ -220,6 +234,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
                             ),
                           ),
                           const SizedBox(width: 12),
+                          // Save button
                           Expanded(
                             child: ElevatedButton(
                               onPressed: _isSaving ? null : _save,
@@ -258,6 +273,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
     );
   }
 
+  /// Loads the clinic's existing profile data from Firestore
   Future<void> _loadProfile() async {
     final uid = _authService.currentUserId;
     if (uid == null) {
@@ -265,8 +281,10 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
       return;
     }
 
+    // Get clinic data from Firestore
     final data = await _authService.getUserData(uid);
     if (data != null) {
+      // Populate form fields with existing data
       _phoneCtrl.text = (data['phone'] as String?) ?? '';
       _addressCtrl.text = (data['address'] as String?) ?? '';
       _hoursCtrl.text = (data['hours'] as String?) ?? '';
@@ -274,12 +292,15 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
       _selectedServices = (services ?? []).cast<String>().toSet();
     }
 
+    // Mark loading as complete and rebuild UI
     if (mounted) {
       setState(() => _isLoading = false);
     }
   }
 
+  /// Validates and saves the edited clinic profile data to Firestore
   Future<void> _save() async {
+    // Validate form inputs before saving
     if (!_formKey.currentState!.validate()) return;
 
     final uid = _authService.currentUserId;
@@ -290,8 +311,10 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
       return;
     }
 
+    // Show loading indicator
     setState(() => _isSaving = true);
 
+    // Update clinic profile in Firestore
     final success = await _authService.updateUserProfile(
       uid: uid,
       userType: 'clinic',
@@ -306,6 +329,7 @@ class _EditClinicProfileState extends State<EditClinicProfile> {
     if (!mounted) return;
     setState(() => _isSaving = false);
 
+    // Show result message and navigate back if successful
     if (success) {
       ScaffoldMessenger.of(
         context,

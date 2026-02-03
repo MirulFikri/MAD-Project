@@ -12,8 +12,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -40,6 +39,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- BACK BUTTON ---
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: const Padding(
@@ -54,9 +54,12 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                   ),
                 ),
               ),
+              
+              // --- HEADER SECTION ---
               Center(
                 child: Column(
                   children: [
+                    // Pet owner illustration
                     Image.asset(
                       'images/petowner.png',
                       width: 80,
@@ -103,6 +106,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // --- FORM TITLE ---
                       const Text(
                         'Create Account',
                         style: TextStyle(
@@ -112,6 +116,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      // --- FULL NAME FIELD ---
                       const Text(
                         'Full Name',
                         style: TextStyle(
@@ -138,6 +143,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // --- EMAIL FIELD ---
                       const Text(
                         'Email',
                         style: TextStyle(
@@ -165,6 +171,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // --- PHONE FIELD ---
                       const Text(
                         'Phone',
                         style: TextStyle(
@@ -192,6 +199,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // --- PASSWORD FIELD ---
                       const Text(
                         'Password',
                         style: TextStyle(
@@ -203,7 +211,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _passwordController,
-                        obscureText: _obscurePassword,
+                        obscureText: _obscurePassword, // Hide password by default
                         decoration: InputDecoration(
                           hintText: 'Create a password',
                           filled: true,
@@ -216,6 +224,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
+                          // Toggle button to show/hide password
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
@@ -230,6 +239,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // --- CONFIRM PASSWORD FIELD ---
                       const Text(
                         'Confirm Password',
                         style: TextStyle(
@@ -254,21 +264,19 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
+                          // Toggle button for confirm password field
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscureConfirmPassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
+                              _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
                               color: Colors.grey.shade600,
                             ),
-                            onPressed: () => setState(
-                              () => _obscureConfirmPassword =
-                                  !_obscureConfirmPassword,
-                            ),
+                            onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                           ),
                         ),
                       ),
                       const SizedBox(height: 28),
+                      
+                      // --- CREATE ACCOUNT BUTTON ---
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -286,8 +294,9 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                             ),
                           ),
                           onPressed: _isLoading
-                              ? null
+                              ? null // Disable button while loading
                               : () async {
+                                  // Get all field values
                                   final name = _fullNameController.text.trim();
                                   final email = _emailController.text.trim();
                                   final phone = _phoneController.text.trim();
@@ -295,6 +304,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                                   final confirmPassword =
                                       _confirmPasswordController.text;
 
+                                  // Validation: Ensure all required fields are filled
                                   if (name.isEmpty ||
                                       email.isEmpty ||
                                       phone.isEmpty ||
@@ -309,6 +319,7 @@ class _CreateOwnerScreenState extends State<CreateOwnerScreen> {
                                     return;
                                   }
 
+                                  // Validation: Check passwords match
                                   if (password != confirmPassword) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(

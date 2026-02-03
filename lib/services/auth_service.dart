@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Common vet clinic services
+/// Used as default or reference when creating clinic profiles
 const List<String> commonVetServices = [
   'General Checkup',
   'Vaccinations',
@@ -16,21 +16,22 @@ const List<String> commonVetServices = [
   'Dermatology',
   'Orthopedics',
 ];
-
+/// Service class for handling user authentication and profile management
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Get current user
+  /// Returns the currently logged-in user, or null if no user is signed in
   User? get currentUser => _auth.currentUser;
 
-  // Get current user ID
+  /// Returns the unique ID of the currently logged-in user, or null if not signed in
   String? get currentUserId => _auth.currentUser?.uid;
 
-  // Auth state changes stream
+  /// A stream that emits the current authentication state whenever it changes
+  /// Used to listen for login/logout events throughout the app
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Sign up with email and password for Pet Owner
+  /// Creates a new pet owner account in Firebase and stores owner profile in Firestore
   Future<Map<String, dynamic>> signUpOwner({
     required String email,
     required String password,
@@ -38,15 +39,17 @@ class AuthService {
     required String phone,
   }) async {
     try {
-      // Create user in Firebase Auth
+      // Create the user account in Firebase Authentication
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
+      /// Prints the newly created user's unique identifier (uid) and email address
+      /// to the console for debugging and verification purposes.
       print(
         'DEBUG: Owner signup - uid: ${userCredential.user!.uid}, email: $email',
       );
 
-      // Create user profile in Firestore
+      // Store the owner's profile information in Firestore database
       await _firestore.collection('owners').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
         'email': email,
@@ -75,7 +78,7 @@ class AuthService {
     }
   }
 
-  // Sign up with email and password for Clinic
+  /// Creates a new veterinary clinic account in Firebase and stores clinic profile in Firestore
   Future<Map<String, dynamic>> signUpClinic({
     required String email,
     required String password,
@@ -85,11 +88,11 @@ class AuthService {
     List<String>? services,
   }) async {
     try {
-      // Create user in Firebase Auth
+      // Create the clinic account in Firebase Authentication
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      // Create clinic profile in Firestore
+      // Store the clinic's detailed profile information in Firestore database
       await _firestore.collection('clinics').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
         'email': email,
@@ -117,7 +120,7 @@ class AuthService {
     }
   }
 
-  // Sign in with email and password
+  /// Authenticates a user with their email and password
   Future<Map<String, dynamic>> signIn({
     required String email,
     required String password,
@@ -128,7 +131,8 @@ class AuthService {
         password: password,
       );
 
-      // Check user type
+      // After successful login, determine whether this is an owner or clinic account
+      // This is used to show the correct dashboard
       String? userType = await getUserType(userCredential.user!.uid);
       print(
         'DEBUG: SignIn - uid: ${userCredential.user!.uid}, userType: $userType',
@@ -150,10 +154,10 @@ class AuthService {
     }
   }
 
-  // Get user type (owner or clinic)
+  /// Determines whether a user is a pet owner or a veterinary clinic
   Future<String?> getUserType(String uid) async {
     try {
-      // Check if user is an owner
+      // First, check if this user is registered as a pet owner
       DocumentSnapshot ownerDoc = await _firestore
           .collection('owners')
           .doc(uid)
@@ -162,7 +166,7 @@ class AuthService {
         return 'owner';
       }
 
-      // Check if user is a clinic
+      // If not found in owners, check if they are registered as a clinic
       DocumentSnapshot clinicDoc = await _firestore
           .collection('clinics')
           .doc(uid)
@@ -180,12 +184,14 @@ class AuthService {
     }
   }
 
-  // Get user data
+  /// Retrieves the complete profile data for a user from Firestore
   Future<Map<String, dynamic>?> getUserData(String uid) async {
     try {
+      // Determine user type first, then retrieve data from the appropriate collection
       String? userType = await getUserType(uid);
 
       if (userType == 'owner') {
+        // Retrieve owner profile data from Firestore
         DocumentSnapshot doc = await _firestore
             .collection('owners')
             .doc(uid)
@@ -205,15 +211,17 @@ class AuthService {
     }
   }
 
-  // Update user profile
+  /// Updates a user's profile information in Firestore
   Future<bool> updateUserProfile({
     required String uid,
     required String userType,
     required Map<String, dynamic> data,
   }) async {
     try {
+      // Add a server timestamp to record when this update happened
       data['updatedAt'] = FieldValue.serverTimestamp();
 
+      // Update the appropriate collection based on user type
       if (userType == 'owner') {
         await _firestore.collection('owners').doc(uid).update(data);
       } else if (userType == 'clinic') {
@@ -226,12 +234,12 @@ class AuthService {
     }
   }
 
-  // Sign out
+  /// This clears the user's session and prevents access to protected features.
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  // Reset password
+  /// Sends a password reset email to the user
   Future<Map<String, dynamic>> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -249,7 +257,7 @@ class AuthService {
     }
   }
 
-  // Change password
+  /// Changes the password of the currently logged-in user
   Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -260,7 +268,7 @@ class AuthService {
         return {'success': false, 'error': 'No user is currently signed in.'};
       }
 
-      // Re-authenticate user
+      // Verify the user's identity by re-authenticating with current password
       AuthCredential credential = EmailAuthProvider.credential(
         email: user.email!,
         password: currentPassword,
@@ -268,7 +276,7 @@ class AuthService {
 
       await user.reauthenticateWithCredential(credential);
 
-      // Update password
+      // If verified, update to the new password
       await user.updatePassword(newPassword);
 
       return {'success': true, 'message': 'Password changed successfully.'};
@@ -282,7 +290,7 @@ class AuthService {
     }
   }
 
-  // Delete account
+  /// Permanently deletes the user's account from Firebase and Firestore
   Future<Map<String, dynamic>> deleteAccount(String password) async {
     try {
       User? user = _auth.currentUser;
@@ -290,7 +298,7 @@ class AuthService {
         return {'success': false, 'error': 'No user is currently signed in.'};
       }
 
-      // Re-authenticate user
+      // Verify the user's identity by re-authenticating with their password
       AuthCredential credential = EmailAuthProvider.credential(
         email: user.email!,
         password: password,
@@ -298,7 +306,7 @@ class AuthService {
 
       await user.reauthenticateWithCredential(credential);
 
-      // Get user type and delete Firestore data
+      // Delete the user's profile data from Firestore
       String? userType = await getUserType(user.uid);
       if (userType == 'owner') {
         await _firestore.collection('owners').doc(user.uid).delete();
@@ -306,7 +314,7 @@ class AuthService {
         await _firestore.collection('clinics').doc(user.uid).delete();
       }
 
-      // Delete user account
+      // Delete the user's Firebase Auth account
       await user.delete();
 
       return {'success': true, 'message': 'Account deleted successfully.'};
@@ -320,7 +328,9 @@ class AuthService {
     }
   }
 
-  // Get all clinics
+  /// Retrieves a list of all registered veterinary clinics.
+  /// Used by pet owners to find and browse available clinics.
+  /// Returns all clinic profiles from the Firestore database.
   Future<List<Map<String, dynamic>>> getAllClinics() async {
     try {
       final snapshot = await _firestore.collection('clinics').get();
@@ -331,7 +341,7 @@ class AuthService {
     }
   }
 
-  // Get user-friendly error messages
+  /// Converts Firebase error codes into clear, user-friendly error messages
   String _getAuthErrorMessage(String code) {
     switch (code) {
       case 'weak-password':

@@ -12,14 +12,19 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
   final TextEditingController _clinicNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  
+  // Password visibility toggles
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  
   bool _isLoading = false;
+  
+  // Set of services selected by the clinic
   Set<String> _selectedServices = {};
+  
   final authService = AuthService();
 
   @override
@@ -43,6 +48,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- BACK BUTTON ---
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: const Padding(
@@ -57,9 +63,12 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                   ),
                 ),
               ),
+              
+              // Display clinic icon and title
               Center(
                 child: Column(
                   children: [
+                    // Clinic/hospital icon
                     CircleAvatar(
                       radius: 40,
                       backgroundColor: Colors.grey.shade300,
@@ -118,6 +127,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      // --- CLINIC NAME FIELD ---
                       const Text(
                         'Clinic Name',
                         style: TextStyle(
@@ -144,6 +154,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // --- EMAIL FIELD ---
                       const Text(
                         'Email',
                         style: TextStyle(
@@ -171,6 +182,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // --- PHONE FIELD ---
                       const Text(
                         'Phone',
                         style: TextStyle(
@@ -184,7 +196,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
-                          hintText: '+1234567890',
+                          hintText: '0123456789',
                           filled: true,
                           fillColor: Colors.grey.shade100,
                           contentPadding: const EdgeInsets.symmetric(
@@ -198,6 +210,9 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      
+                      // --- ADDRESS FIELD ---
+                      // Multi-line input for full clinic address
                       const Text(
                         'Address',
                         style: TextStyle(
@@ -225,6 +240,8 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      
+                      // --- SERVICES SELECTION ---
                       const Text(
                         'Services',
                         style: TextStyle(
@@ -237,6 +254,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
+                        // Create FilterChip for each service from commonVetServices list
                         children: commonVetServices.map((service) {
                           final isSelected = _selectedServices.contains(
                             service,
@@ -244,6 +262,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                           return FilterChip(
                             label: Text(service),
                             selected: isSelected,
+                            // Toggle service selection when tapped
                             onSelected: (selected) {
                               setState(() {
                                 if (selected) {
@@ -259,6 +278,8 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         }).toList(),
                       ),
                       const SizedBox(height: 16),
+                      
+                      // --- PASSWORD FIELD ---
                       const Text(
                         'Password',
                         style: TextStyle(
@@ -270,7 +291,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _passwordController,
-                        obscureText: _obscurePassword,
+                        obscureText: _obscurePassword, // Hide password by default
                         decoration: InputDecoration(
                           hintText: 'Create a password',
                           filled: true,
@@ -283,11 +304,10 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
+                          // Toggle button to show/hide password
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
                               color: Colors.grey.shade600,
                             ),
                             onPressed: () => setState(
@@ -297,6 +317,8 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      
+                      // --- CONFIRM PASSWORD FIELD ---
                       const Text(
                         'Confirm Password',
                         style: TextStyle(
@@ -321,21 +343,20 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
+                          // Toggle button for confirm password field
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscureConfirmPassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
+                              _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
                               color: Colors.grey.shade600,
                             ),
-                            onPressed: () => setState(
-                              () => _obscureConfirmPassword =
-                                  !_obscureConfirmPassword,
+                            onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword,
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 28),
+                      
+                      // --- CREATE ACCOUNT BUTTON ---
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -353,18 +374,17 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                             ),
                           ),
                           onPressed: _isLoading
-                              ? null
+                              ? null // Disable button while loading
                               : () async {
-                                  final clinicName = _clinicNameController.text
-                                      .trim();
+                                  // Get all field values
+                                  final clinicName = _clinicNameController.text.trim();
                                   final email = _emailController.text.trim();
                                   final phone = _phoneController.text.trim();
-                                  final address = _addressController.text
-                                      .trim();
+                                  final address = _addressController.text.trim();
                                   final password = _passwordController.text;
-                                  final confirmPassword =
-                                      _confirmPasswordController.text;
+                                  final confirmPassword = _confirmPasswordController.text;
 
+                                  // Validation: Ensure all required fields are filled
                                   if (clinicName.isEmpty ||
                                       email.isEmpty ||
                                       phone.isEmpty ||
@@ -380,6 +400,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                                     return;
                                   }
 
+                                  // Validation: Check passwords match
                                   if (password != confirmPassword) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -389,8 +410,10 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                                     return;
                                   }
 
+                                  // Show loading state
                                   setState(() => _isLoading = true);
 
+                                  // Create clinic account through AuthService
                                   final result = await authService.signUpClinic(
                                     email: email,
                                     password: password,
@@ -400,6 +423,7 @@ class _CreateClinicScreenState extends State<CreateClinicScreen> {
                                     services: _selectedServices.toList(),
                                   );
 
+                                  // Hide loading state
                                   setState(() => _isLoading = false);
 
                                   if (!mounted) return;
