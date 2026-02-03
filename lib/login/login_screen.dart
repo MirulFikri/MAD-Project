@@ -77,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Login title
                         const Center(
                           child: Text(
                             'Login',
@@ -87,11 +88,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+                        
+                        // Forgot password button
+                        // Sends password reset email via Firebase Auth
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
+                            child: const Text('Forgot password?'),
                             onPressed: () async {
                               final email = _emailController.text.trim();
+                              // Validate that email is entered before sending reset link
                               if (email.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -102,16 +108,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                                 return;
                               }
+                              // Call AuthService to send password reset email
                               final result = await _authService.resetPassword(
                                 email,
                               );
                               if (!context.mounted) return;
+                              
+                              // Show success or error message based on result
                               if (result['success'] == true) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      result['message'] ??
-                                          'Password reset email sent.',
+                                      result['message'] ?? 'Password reset email sent.',
                                     ),
                                   ),
                                 );
@@ -119,18 +127,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      result['error'] ??
-                                          'Failed to send reset email',
+                                      result['error'] ?? 'Failed to send reset email',
                                     ),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
                               }
                             },
-                            child: const Text('Forgot password?'),
                           ),
                         ),
                         const SizedBox(height: 24),
+                        
+                        // --- EMAIL INPUT FIELD ---
                         const Text(
                           'Email',
                           style: TextStyle(
@@ -158,6 +166,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 18),
+                        
+                        // --- PASSWORD INPUT FIELD ---
                         const Text(
                           'Password',
                           style: TextStyle(
@@ -169,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 8),
                         TextField(
                           controller: _passwordController,
-                          obscureText: _obscurePassword,
+                          obscureText: _obscurePassword, // Hide password text
                           decoration: InputDecoration(
                             hintText: 'Enter your password',
                             filled: true,
@@ -182,20 +192,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
                             ),
+                            // Toggle button to show/hide password
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
+                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
                                 color: Colors.grey.shade600,
                               ),
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
+                        
+                        // --- LOGIN BUTTON ---
                         SizedBox(
                           width: double.infinity,
                           height: 48,
@@ -213,11 +222,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             onPressed: _isLoading
-                                ? null
+                                ? null // Disable button while loading
                                 : () async {
+                                    // Get trimmed email and password values
                                     final email = _emailController.text.trim();
                                     final password = _passwordController.text;
 
+                                    // Validate that both fields are filled
                                     if (email.isEmpty || password.isEmpty) {
                                       ScaffoldMessenger.of(
                                         context,
@@ -231,20 +242,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                       return;
                                     }
 
+                                    // Show loading state
                                     setState(() => _isLoading = true);
 
+                                    // Attempt to sign in via AuthService
                                     final result = await _authService.signIn(
                                       email: email,
                                       password: password,
                                     );
 
+                                    // Hide loading state
                                     setState(() => _isLoading = false);
 
                                     if (!mounted) return;
 
+                                    // Handle successful login
                                     if (result['success'] == true) {
                                       final userType = result['userType'];
 
+                                      // Navigate based on user role (owner or clinic)
                                       if (userType == 'owner') {
                                         Navigator.pushReplacementNamed(
                                           context,
@@ -256,6 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           '/clinic_home',
                                         );
                                       } else {
+                                        // Handle unexpected user type
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
@@ -268,6 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         );
                                       }
                                     } else {
+                                      // Show error message for failed login
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
@@ -280,6 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
                                     }
                                   },
+                            // Show loading spinner or "Log in" text
                             child: _isLoading
                                 ? const SizedBox(
                                     height: 20,
@@ -295,6 +314,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        
+                        // --- SIGN UP LINK ---
                         Center(
                           child: RichText(
                             text: TextSpan(

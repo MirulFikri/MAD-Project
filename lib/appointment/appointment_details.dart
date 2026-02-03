@@ -5,15 +5,10 @@ class AppointmentDetailsScreen extends StatefulWidget {
   final String appointmentId;
   final Map<String, dynamic>? appointmentData;
 
-  const AppointmentDetailsScreen({
-    super.key,
-    required this.appointmentId,
-    this.appointmentData,
-  });
+  const AppointmentDetailsScreen({super.key, required this.appointmentId, this.appointmentData});
 
   @override
-  State<AppointmentDetailsScreen> createState() =>
-      _AppointmentDetailsScreenState();
+  State<AppointmentDetailsScreen> createState() => _AppointmentDetailsScreenState();
 }
 
 class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
@@ -32,6 +27,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
 
   Future<void> _loadAppointment() async {
     try {
+      // Use pre-loaded data if available, otherwise fetch from Firestore
       Map<String, dynamic>? data = widget.appointmentData;
       if (data == null || data.isEmpty) {
         final doc = await _firestore
@@ -39,6 +35,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
             .doc(widget.appointmentId)
             .get();
         if (doc.exists) {
+          // Add document ID to the data for reference
           data = {'id': doc.id, ...doc.data() as Map<String, dynamic>};
         }
       }
@@ -49,9 +46,11 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         final ownerId = data['ownerId'] ?? '';
         final clinicId = data['clinicId'] ?? '';
 
+        // --- LOAD OWNER INFO ---
         if (data['ownerName'] != null && data['ownerName'] != '') {
           _ownerName = data['ownerName'];
         } else if (ownerId.isNotEmpty) {
+          // Query owners collection by owner ID
           final ownerDoc = await _firestore
               .collection('owners')
               .doc(ownerId)
@@ -80,6 +79,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
           _ownerPhone = data['phone'];
         }
 
+        // --- LOAD CLINIC INFO ---
         if (data['clinicName'] != null && data['clinicName'] != '') {
           _clinicName = data['clinicName'];
         } else if (clinicId.isNotEmpty) {
@@ -97,9 +97,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
           }
         }
       }
-    } catch (_) {
-      // keep defaults
-    }
+    } catch (_) {}
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -147,6 +145,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // --- APPOINTMENT SECTION ---
                       _SectionCard(
                         title: 'Appointment',
                         children: [
@@ -156,6 +155,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
                       _SectionCard(
                         title: 'Schedule',
                         children: [
@@ -168,6 +168,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
                       _SectionCard(
                         title: 'Owner',
                         children: [
@@ -176,11 +177,13 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
                       _SectionCard(
                         title: 'Clinic',
                         children: [_infoRow('Name', _clinicName)],
                       ),
                       const SizedBox(height: 16),
+
                       _SectionCard(
                         title: 'Notes',
                         children: [
@@ -245,7 +248,10 @@ class _SectionCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+          ),
         ],
       ),
       child: Column(

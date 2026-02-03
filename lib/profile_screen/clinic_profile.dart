@@ -11,6 +11,9 @@ class ClinicProfile extends StatefulWidget {
 
 class _ClinicProfileState extends State<ClinicProfile> {
   final AuthService _authService = AuthService();
+  
+  /// Key used to force refresh the FutureBuilder when profile is updated
+  /// Incrementing this key causes the FutureBuilder to rebuild with fresh data
   int _refreshKey = 0;
 
   void _refreshProfile() {
@@ -22,7 +25,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7FF), // Light blue background
+      backgroundColor: const Color(0xFFEFF7FF),
       appBar: AppBar(
         title: const Text(
           'Profile',
@@ -33,17 +36,21 @@ class _ClinicProfileState extends State<ClinicProfile> {
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
+      // FutureBuilder fetches clinic data from Firestore asynchronously
+      // and updates the UI as data loads
       body: FutureBuilder<Map<String, dynamic>?>(
         key: ValueKey(_refreshKey),
         future: _authService.currentUserId != null
             ? _authService.getUserData(_authService.currentUserId!)
             : Future.value(null),
         builder: (context, snapshot) {
+          // Show loading indicator while data is being fetched
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
+          // Extract clinic profile data from snapshot, using defaults if not found
           final profile = snapshot.data ?? {};
           final user = _authService.currentUser;
           final clinicName =
@@ -62,11 +69,12 @@ class _ClinicProfileState extends State<ClinicProfile> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // --- HEADER: Clinic Image & Name ---
+                // Display the clinic's avatar/logo and name
                 const SizedBox(height: 10),
                 Center(
                   child: Column(
                     children: [
+                      // Clinic avatar with blue hospital icon
                       Container(
                         padding: const EdgeInsets.all(4),
                         decoration: const BoxDecoration(
@@ -76,7 +84,6 @@ class _ClinicProfileState extends State<ClinicProfile> {
                         child: CircleAvatar(
                           radius: 50,
                           backgroundColor: Colors.blue[100],
-                          // You can change this Icon to an Image later using AssetImage
                           child: const Icon(
                             Icons.local_hospital,
                             size: 50,
@@ -92,6 +99,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      // Account type label
                       Text(
                         subtitle,
                         style: const TextStyle(
@@ -105,7 +113,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
 
                 const SizedBox(height: 30),
 
-                // --- DETAILS SECTION ---
+                // Card containing clinic contact information
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -132,6 +140,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      // Display each clinic detail (email, phone, location, hours)
                       _buildProfileRow(Icons.email_outlined, "Email", email),
                       const Divider(height: 30),
                       _buildProfileRow(Icons.phone_outlined, "Phone", phone),
@@ -149,7 +158,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
 
                 const SizedBox(height: 20),
 
-                // --- SERVICES SECTION ---
+                // Display list of services offered by the clinic (if any exist)
                 if (servicesList.isNotEmpty)
                   Container(
                     width: double.infinity,
@@ -177,6 +186,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        // Display services as tags
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -211,7 +221,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
 
                 const SizedBox(height: 20),
 
-                // --- EDIT BUTTON ---
+                // Edit button
                 ElevatedButton.icon(
                   onPressed: () async {
                     await Navigator.push(
@@ -220,6 +230,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
                         builder: (_) => const EditClinicProfile(),
                       ),
                     );
+                    // Refresh profile after returning from edit screen
                     _refreshProfile();
                   },
                   icon: const Icon(Icons.edit),
@@ -231,7 +242,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
 
                 const SizedBox(height: 12),
 
-                // --- LOGOUT BUTTON ---
+                // Logout button
                 OutlinedButton.icon(
                   onPressed: () {
                     _showLogoutDialog(context, _authService);
@@ -266,7 +277,9 @@ class _ClinicProfileState extends State<ClinicProfile> {
             onPressed: () async {
               Navigator.pop(context);
               try {
+                // Sign out the user from Firebase
                 await authService.signOut();
+                // Navigate to login screen and remove all previous screens from stack
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   '/login',
@@ -285,7 +298,7 @@ class _ClinicProfileState extends State<ClinicProfile> {
     );
   }
 
-  // Helper widget to create the rows (Email, Phone, etc.)
+  /// Displays an icon, label, and value in a row format with proper styling
   Widget _buildProfileRow(IconData icon, String label, String value) {
     return Row(
       children: [
