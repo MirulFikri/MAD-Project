@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:petcare_app/services/auth_service.dart';
 
+/// This screen displays the profile of a pet, including basic info and medical records.
+/// Users can select a pet from a dropdown to view its details.
 class PetProfile extends StatefulWidget {
   const PetProfile({super.key});
 
@@ -10,11 +12,18 @@ class PetProfile extends StatefulWidget {
 }
 
 class _PetProfileState extends State<PetProfile> {
+
+  // Handles authentication and gives access to the current user
   final AuthService _authService = AuthService();
+
+  // Firestore instance used to fetch pet and medical record data
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Stores the currently selected pet ID
   String? _selectedPet;
   List<String> _pets = [];
+
+  // Stores detailed data of the selected pet
   Map<String, dynamic>? _selectedPetData;
   List<Map<String, dynamic>> _healthRecords = [];
   bool _isLoading = true;
@@ -22,9 +31,11 @@ class _PetProfileState extends State<PetProfile> {
   @override
   void initState() {
     super.initState();
+    // Load pets when the screen starts
     _loadPets();
   }
 
+  // Loads all pets that belong to the currently logged-in owner
   Future<void> _loadPets() async {
     final uid = _authService.currentUserId;
     if (uid == null) {
@@ -38,6 +49,8 @@ class _PetProfileState extends State<PetProfile> {
           .where('ownerId', isEqualTo: uid)
           .get();
 
+
+      // Use document ID as pet identifier
       final petNames = snapshot.docs.map((doc) => doc.id).toList();
       setState(() {
         _pets = petNames;
@@ -49,10 +62,15 @@ class _PetProfileState extends State<PetProfile> {
     }
   }
 
+  // Loads detailed pet data and its medical records
   Future<void> _loadPetData(String petId) async {
     try {
+
+      // Fetch pet details
       final petDoc = await _firestore.collection('pets').doc(petId).get();
 
+
+      // Fetch medical records for the selected pet
       final recordsSnapshot = await _firestore
           .collection('medicalRecords')
           .where('petId', isEqualTo: petId)
@@ -62,7 +80,7 @@ class _PetProfileState extends State<PetProfile> {
           .map((doc) => {...doc.data(), 'id': doc.id})
           .toList();
 
-      // Sort by createdAt in memory
+      // Sort medical records by date (Latest first)
       records.sort((a, b) {
         final aTime = a['createdAt'] as Timestamp?;
         final bTime = b['createdAt'] as Timestamp?;
@@ -95,8 +113,11 @@ class _PetProfileState extends State<PetProfile> {
         foregroundColor: Colors.black87,
         elevation: 0,
       ),
+
+      // Main body of the page
       body: SafeArea(
         child: _isLoading
+            // Show loading indicator while fetching data
             ? const Center(child: CircularProgressIndicator())
             : _pets.isEmpty
             ? Center(
@@ -111,7 +132,7 @@ class _PetProfileState extends State<PetProfile> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Dropdown for pets
+                      // Dropdown to select a pet owner by the user
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -150,6 +171,8 @@ class _PetProfileState extends State<PetProfile> {
                         ),
                       ),
                       const SizedBox(height: 16),
+
+                      // Show pet details only after a pet i selected
                       if (_selectedPetData != null) ...[
                         // Gradient card
                         Container(

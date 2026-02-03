@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
+
+// This screen allows users to find vet clinics
+// Viewe all registered vet clinics and search by name 
 class FindClinicsScreen extends StatefulWidget {
   const FindClinicsScreen({super.key});
 
@@ -9,9 +12,17 @@ class FindClinicsScreen extends StatefulWidget {
 }
 
 class _FindClinicsScreenState extends State<FindClinicsScreen> {
+
+  // Used to fetch clinics data
   final AuthService _authService = AuthService();
+
+  // Controls the search input
   final TextEditingController _searchCtrl = TextEditingController();
+
+  // Stores all clinics from database
   List<Map<String, dynamic>> _allClinics = [];
+
+  // Stores filtered clinics based on search
   List<Map<String, dynamic>> _filteredClinics = [];
   bool _isLoading = true;
 
@@ -19,15 +30,21 @@ class _FindClinicsScreenState extends State<FindClinicsScreen> {
   void initState() {
     super.initState();
     _loadClinics();
+
+    // Listen for seach input changes
     _searchCtrl.addListener(_filterClinics);
   }
 
   @override
   void dispose() {
+
+    // Dispose controller to avoid memory leak
     _searchCtrl.dispose();
     super.dispose();
   }
 
+
+  // Loads all clinics from the database
   Future<void> _loadClinics() async {
     try {
       final clinics = await _authService.getAllClinics();
@@ -46,6 +63,8 @@ class _FindClinicsScreenState extends State<FindClinicsScreen> {
     }
   }
 
+
+  // Filters clinics based on search text
   void _filterClinics() {
     final query = _searchCtrl.text.toLowerCase();
     setState(() {
