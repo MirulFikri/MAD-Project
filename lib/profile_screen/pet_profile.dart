@@ -143,7 +143,7 @@ class _PetProfileState extends State<PetProfile> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
+                              color: Colors.black.withValues(),
                               blurRadius: 8,
                             ),
                           ],
