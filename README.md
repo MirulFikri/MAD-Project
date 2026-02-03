@@ -4,10 +4,10 @@
 **Group Name:** Doom Patrol
 | Name | Matric No | Assigned Tasks |
 | ---- | --------- | ------------- |
-| Amirul Fikri Bin Amir | 2217981 | Background of the problem. Profile for users, pets, and vet clinics. |
-| Tun Ainul Yaqin Bin Azmel | 2216103 | Features and functionality. Vet finder |
-| Mohamad Haris Daniel Bin Abdullah | 2226517 | Target user and preferred platform. Dashboard and activity tracking. |
-| Muhamad Aiman Bin Ajee Maideen | 2222077 | Purpose or objective. Reminder and notifications. |
+| Amirul Fikri Bin Amir | 2217981 | Background of the problem. Profile for users, pets, and vet clinics. CODES: auth_service.dart, appointment_details.dart, clinic_navigation.dart, owner_navigation.dart, create-clinic.dart, create_owner.dart, signup_screen.dart, login_screen.dart, activity_tracking, patient_details.dart, clinic_profile.dart, edit_clinic_profile.dart, owner_profile.dart, edit_owner_profile.dart, pet_profile, find_clinics_screen.dart. |
+| Tun Ainul Yaqin Bin Azmel | 2216103 | Features and functionality. Vet finder. CODES: find_clinics_screen.dart, clinic_appointment.dart, owner_appointment.dart, owner_profile.dart, edit_owner_profile.dart, owner_navigation.dart. |
+| Mohamad Haris Daniel Bin Abdullah | 2226517 | Target user and preferred platform. Dashboard and activity tracking. CODES: clinic_appointment.dart, owner_appointment, owner_navigation.dart, clinic_navigation.dart, schedule.dart, vet_dashboard.dart, activity_tracking.dart, add_pet.dart, owner_homescreen.dart. |
+| Muhamad Aiman Bin Ajee Maideen | 2222077 | Purpose or objective. Reminder and notifications. CODES: notification_service.dart, reminder_screen.dart, patients.dart, clinic_appointment.dart, owner_appointment, owner_navigation.dart, clinic_navigation.dart. |
 
 ## 1. Project Ideation & Initiation
 
@@ -90,8 +90,6 @@ Figma: https://www.figma.com/design/xJbuvQeZgDbKIHkdIaNUxL/PetCare?node-id=0-1&t
 - Md Yusaini, N. Y. S., & Ali, N. A. (2025). PetPals: A Pet Care Companion Mobile Application for Pet Owners. Journal of Computing Technologies and Creative Content. https://doi.org/10.70672/qnhmye46
 
 - Navigation and routing. (n.d.). Retrieved February 2, 2026, from https://docs.flutter.dev/ui/ui/navigation/index.md
-
-- PetCare: A Smart Pet Care Mobile App Implementation and Functionality. (2025). International Journal of Modern Research in Engineering & Science (IJMRSET), 8(3).
 
 - Towards mHealth applications for pet animal owners: a comprehensive literature review of requirements. (2025). BMC Veterinary Research, 21, Article 190.
 
