@@ -504,19 +504,63 @@ class _ReminderScreenState extends State<ReminderScreen> {
 
                     GestureDetector(
                       onTap: () {
+                        print('Add button tapped');
+                        print('selectedPet: $selectedPet');
+                        print('selectedType: $selectedType');
+                        print('selectedDate: $selectedDate');
+                        print('selectedTime: $selectedTime');
+                        print('selectedRepeat: $selectedRepeat');
+                        
                         if (selectedPet != null &&
                             selectedType != null &&
                             selectedDate != null &&
                             selectedTime != null) {
-                          _addReminder(
-                            selectedPet!,
-                            selectedType!,
-                            selectedDate!,
-                            selectedTime!,
-                            remindMe: selectedRemindMe,
-                            repeat: selectedRepeat,
+                          // Validate that the scheduled date/time is in the future
+                          final scheduledDateTime = DateTime(
+                            selectedDate!.year,
+                            selectedDate!.month,
+                            selectedDate!.day,
+                            selectedTime!.hour,
+                            selectedTime!.minute,
                           );
-                          Navigator.pop(context);
+
+                          print('scheduledDateTime: $scheduledDateTime');
+                          print('now: ${DateTime.now()}');
+                          print('isBefore: ${scheduledDateTime.isBefore(DateTime.now())}');
+
+                          // Show error only if time is past AND repeat is "Never"
+                          if (scheduledDateTime.isBefore(DateTime.now()) &&
+                              selectedRepeat == "Never") {
+                            // Show error dialog for past date/time with Never repeat
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext dialogContext) {
+                                return AlertDialog(
+                                  title: const Text('Invalid Date/Time'),
+                                  content: const Text(
+                                    'The reminder date and time cannot be in the past when repeat is set to "Never". Please select a future date and time.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(dialogContext),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          } else {
+                            // Proceed with adding reminder
+                            _addReminder(
+                              selectedPet!,
+                              selectedType!,
+                              selectedDate!,
+                              selectedTime!,
+                              remindMe: selectedRemindMe,
+                              repeat: selectedRepeat,
+                            );
+                            Navigator.pop(context);
+                          }
                         }
                       },
                       child: const CircleAvatar(
