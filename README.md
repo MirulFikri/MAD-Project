@@ -7,7 +7,7 @@
 | Amirul Fikri Bin Amir | 2217981 | Background of the problem. Profile for users, pets, and vet clinics. **CODES:** auth_service.dart, appointment_details.dart, clinic_navigation.dart, owner_navigation.dart, create_clinic.dart, create_owner.dart, signup_screen.dart, login_screen.dart, patient_details.dart, clinic_profile.dart, edit_clinic_profile.dart, owner_profile.dart, edit_owner_profile.dart, pet_profile.dart, find_clinics_screen.dart. |
 | Tun Ainul Yaqin Bin Azmel | 2216103 | Features and functionality. Vet finder. **CODES:** find_clinics_screen.dart, clinic_appointment.dart, owner_appointment.dart, owner_profile.dart, edit_owner_profile.dart, owner_navigation.dart, clinic_profile.dart. |
 | Mohamad Haris Daniel Bin Abdullah | 2226517 | Target user and preferred platform. Dashboard and activity tracking. **CODES:** clinic_appointment.dart, owner_appointment.dart, owner_navigation.dart, clinic_navigation.dart, schedule.dart, vet_dashboard.dart, activity_tracking.dart, add_pet.dart, owner_homescreen.dart. |
-| Muhamad Aiman Bin Ajee Maideen | 2222077 | Purpose or objective. Reminder and notifications. **CODES:** notification_service.dart, reminder_screen.dart, patients.dart, clinic_appointment.dart, owner_appointment.dart, owner_navigation.dart, clinic_navigation.dart, clinic_profile.dart |
+| Muhamad Aiman Bin Ajee Maideen | 2222077 | Purpose or objective. Reminder and notifications. **CODES:** notification_service.dart, reminder_screen.dart, patients.dart, clinic_appointment.dart, owner_appointment.dart, owner_navigation.dart, clinic_navigation.dart, clinic_profile.dart. |
 
 ## 1. Project Ideation & Initiation
 
